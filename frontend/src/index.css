@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @theme {
     /* Home page colors */
     --color-pink1: #F5DDD9;
@@ -41,3 +42,4 @@
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
