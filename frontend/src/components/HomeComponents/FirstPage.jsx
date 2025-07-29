@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 
 function FirstPage() {
     return (
@@ -16,9 +17,11 @@ function FirstPage() {
                         Join MealMatch to transform excess food into meaningful connections. Whether you're a college, organization, or individual, help us reduce food waste while feeding communities in need.
                     </div>
                     <div>
+                        <Link to="/signup">
                         <button className="py-2 px-5 lg:py-3 lg:px-6 text-md lg:text-lg font-medium bg-darkpink1 hover:bg-darkpink2 rounded-sm cursor-pointer active:scale-95">
                             Get Started
                         </button>
+                        </Link>
                     </div>
                 </div>
                 <div className="w-full px-10 bg-pink1 flex lg:items-center">

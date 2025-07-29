@@ -32,33 +32,28 @@ function Signup() {
   };
 
   return (
-     <div
-            className=" p-4 relative w-[100vw] min-h-screen bg-[#fadcd9] flex items-center justify-center overflow-hidden" // ✅ CHANGED overflow-hidden → overflow-visible
-            
-            
-        >
+    <div className="w-full min-h-[100vh] p-8 relative bg-pink1 flex items-center justify-center overflow-hidden">
+      {/* 🔷 Upper left square — visible with better contrast */}
+      <div className="absolute top-[20%] left-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] -translate-x-1/2 -translate-y-1/2 z-[5]" />
 
-            {/* 🔷 Upper left square — visible with better contrast */}
-            <div className="absolute top-[20%] left-0 w-[260px] h-[260px] bg-[#f8afa6] rotate-45 rounded-[16px] -translate-x-1/2 -translate-y-1/2 z-[5]" />
+      {/* 🔷 Lower left square — visible with stronger opacity */}
+      <div className="absolute top-[40%] left-0 w-[130px] h-[130px] bg-boxdark rotate-45 rounded-[12px] -translate-x-1/2 -translate-y-1/2 z-[4]" />
 
-            {/* 🔷 Lower left square — visible with stronger opacity */}
-            <div className="absolute top-[40%] left-0 w-[130px] h-[130px] bg-[#f79489] rotate-45 rounded-[12px] -translate-x-1/2 -translate-y-1/2 z-[4]" />
+      {/* 🔷 Upper right square — matched left one */}
+      <div className="absolute bottom-[20%] right-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] translate-x-1/2 translate-y-1/2 z-[5]" />
 
-            {/* 🔷 Upper right square — matched left one */}
-            <div className="absolute bottom-[20%] right-0 w-[260px] h-[260px] bg-[#f8afa6] rotate-45 rounded-[16px] translate-x-1/2 translate-y-1/2 z-[5]" />
+      {/* 🔷 Lower right square — matched left one */}
+      <div className="absolute bottom-[40%] right-0 w-[130px] h-[130px] bg-boxdark rotate-45 rounded-[12px] translate-x-1/2 translate-y-1/2 z-[4]" />
 
-            {/* 🔷 Lower right square — matched left one */}
-            <div className="absolute bottom-[40%] right-0 w-[130px] h-[130px] bg-[#f79489] rotate-45 rounded-[12px] translate-x-1/2 translate-y-1/2 z-[4]" />
-
-            {/* ✅ Added z-[20] and relative to ensure it floats above all rotated squares */}
+      {/* ✅ Added z-[20] and relative to ensure it floats above all rotated squares */}
       {/* Signup Card */}
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 relative z-[20]">
-        <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+      <div className="w-full max-w-md min-w-[40%] bg-white shadow-lg rounded-sm p-8 relative z-[20]">
+        <h1 className="text-xl lg:text-2xl font-semibold text-center text-darkblack1 mb-6">
           Get Started
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm text-gray-600 mb-1">
+          <div className='mb-4'>
+            <label htmlFor="name" className="block text-darkblack1 mb-2">
               Name
             </label>
             <input
@@ -66,30 +61,14 @@ function Signup() {
               type="text"
               name="name"
               value={SignupData.name}
-              placeholder="John Doe"
+              placeholder="Enter your name"
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-darkpink1"
             />
           </div>
-          <div>
-            <label htmlFor="Mobile Number" className="block text-sm text-gray-600 mb-1">
-              Mobile Number
-            </label>
-            <input
-              id="Mobile Number"
-              type="tel"
-              name="Mobile Number"
-              value={SignupData.name}
-              placeholder="**********"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm text-gray-600 mb-1">
+          <div className='mb-4'>
+            <label htmlFor="email" className="block text-darkblack1 mb-2">
               Email
             </label>
             <input
@@ -97,15 +76,29 @@ function Signup() {
               type="email"
               name="email"
               value={SignupData.email}
-              placeholder="john@example.com"
+              placeholder="Enter your email"
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-darkpink1"
             />
           </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm text-gray-600 mb-1">
+          <div className='mb-4'>
+            <label htmlFor="Mobile Number" className="block text-darkblack1 mb-2">
+              Mobile Number
+            </label>
+            <input
+              id="Mobile Number"
+              type="tel"
+              name="Mobile Number"
+              value={SignupData.name}
+              placeholder="Enter your mobile number"
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-darkpink1"
+            />
+          </div>
+          <div className='mb-4'>
+            <label htmlFor="password" className="block text-darkblack1 mb-2">
               Password
             </label>
             <input
@@ -113,14 +106,14 @@ function Signup() {
               type="password"
               name="password"
               value={SignupData.password}
-              placeholder="••••••••"
+              placeholder="Enter password"
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-darkpink1 focus:outline-none"
               required
             />
           </div>
-          <div>
-            <label htmlFor=" confirmpassword" className="block text-sm text-gray-600 mb-1">
+          <div className='mb-4'>
+            <label htmlFor=" confirmpassword" className="block text-darkblack1 mb-2">
               Confirm Password
             </label>
             <input
@@ -128,21 +121,21 @@ function Signup() {
               type="password"
               name="confirm_password"
               value={SignupData.confirm_password}
-              placeholder="••••••••"
+              placeholder="Confirm password"
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-darkpink1 focus:outline-none"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Role</label>
+          <div className='mb-6'>
+            <label className="block text-darkblack1 mb-2">Role</label>
             <select
               name="role"
               value={SignupData.role}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer"
             >
               <option value="" disabled>
                 Select Role
@@ -154,25 +147,21 @@ function Signup() {
 
           <button
             type="submit"
-            className="w-full bg-[#e17b6a] text-white py-2 rounded-lg hover:bg-[#e17b6a] transition duration-200"
+            className="w-full bg-darkpink1 hover:bg-darkpink2 text-white py-2 rounded-sm transition duration-200 cursor-pointer active:scale-95"
           >
             Sign Up
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <p className="text-sm text-gray-500 gap-x-1 mt-6 text-center flex justify-center">
           Already have an account?{" "}
-          <button
-            type="button"
-            onClick={handleLoginClick}
-            className="text-[#e17b6a] hover:underline"
-          >
-            Login
-          </button>
+          <p className="">
+            <a href="/login" className="m-1 text-red-500 font-medium underline">
+              Log in
+            </a>
+          </p>
         </p>
       </div>
-      {/* Decorative Image */}
-  
     </div>
   );
 }

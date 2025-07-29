@@ -3,4 +3,43 @@
 
 @theme {
     /* Home page colors */
-    
+    --color-pink1: #F5DDD9;
+    --color-pink2: #EDB3A8;
+    --color-pink3: #E8998C;
+    --color-darkpink1: #e17b6a;
+    /* --color-darkpink1: #df705e; */
+    --color-darkpink2: #db614d;
+    --color-darkblack1: #272527;
+
+    /* -----------------------------CUSTOM ANIMATION ----------------------------------*/
+    --animate-slideup: slideUp 1s ease-out;
+
+    @keyframes slideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+.transform-style {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
