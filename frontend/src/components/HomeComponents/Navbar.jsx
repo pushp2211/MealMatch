@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import VerticalNavbar from "./VerticalNavbar";
 
 function HomeNav() {
@@ -31,15 +32,20 @@ function HomeNav() {
                         </a>
                     </div>
                     <div className="flex justify-between gap-x-3 items-center text-sm sm:text-md font-medium">
+                        <Link to="/login">
                         <button className="bg-darkpink1 hover:bg-darkpink2 text-white py-2 px-3 cursor-pointer rounded-sm border-2 border-darkpink1 hover:border-darkpink2 active:scale-95">
                             Login
                         </button>
+                        </Link>
+
+                        <Link to="/signup">
                         <button className="relative group py-2 px-3 text-darkpink1 cursor-pointer rounded-sm border-2 border-darkpink1 overflow-hidden active:scale-95">
                             <span className="absolute inset-0 w-0 bg-darkpink1 group-hover:w-full transition-all duration-400 ease-in-out z-0"></span>
                             <span className="relative z-10 group-hover:text-white transition-colors duration-300">
                                 Sign Up
                             </span>
                         </button>
+                        </Link>
                     </div>
                 </div>
             </div>

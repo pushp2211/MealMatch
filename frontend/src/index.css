@@ -11,6 +11,16 @@
     --color-darkpink2: #db614d;
     --color-darkblack1: #272527;
 
+    /* Login Page */
+    --color-boxlight: #f8afa6;
+    --color-boxdark: #f79489;
+
+    /* Dashboard colors addons */
+    --color-dashtext: #000000;
+    --color-dashhovertext: #ffffff;
+    --color-dashbg1: #F5DDD9;
+    --color-dashcard1: #ecbeb6;
+
     /* -----------------------------CUSTOM ANIMATION ----------------------------------*/
     --animate-slideup: slideUp 1s ease-out;
 
@@ -43,3 +53,25 @@
   transform: rotateY(180deg);
 }
 
+/* Updated scrollbar styles to work with themes */
+@utility scrollbar-webkit {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-darkpink1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-pink1);
+    border-radius: 50px;
+    border: 1px solid var(--color-darkpink2);
+    transition: background-color 0.3s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-pink1);
+    border: 1px solid var(--color-darkpink1);
+  }
+}
