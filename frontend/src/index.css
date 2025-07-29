@@ -1,11 +1,6 @@
 @import "tailwindcss";
 
-@themes{
+
+@theme {
     /* Home page colors */
-    --color-orange1: #ff670e,
-    --color-green-login: #aad15f,
-    --color-darkpink1: #e17b6a
-}
-:root{
-    --color-darkpink1: #e17b6a;
-}
+    
