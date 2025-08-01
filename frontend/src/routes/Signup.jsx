@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Signup() {
   const [SignupData, setSignup] = useState({
@@ -6,56 +8,52 @@ function Signup() {
     email: "",
     password: "",
     role: "",
-    mobile_number: "",
-    confirm_password: ""
+    mobileNumber: "",
+    confirmPassword: ""
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSignup((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(SignupData);
+     console.log("Sending signup data:", {SignupData});
 
-    if (!SignupData.role) {
-      alert("Please select a role.");
-    } else {
-      alert(`Signed up as ${SignupData.role}`);
+    if (SignupData.password !== SignupData.confirmPassword) {
+      return alert("Passwords do not match.");
     }
-  };
 
-  const handleLoginClick = () => {
-    // You can implement redirect or page toggle here
-    alert("Redirect to login page");
+    try {
+      const res = await axios.post("http://localhost:8005/send-otp", {
+        email: SignupData.email
+      });
+
+      alert("OTP sent to your email.");
+      localStorage.setItem("pendingSignup", JSON.stringify(SignupData));
+      navigate("/otpverify");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert(err.response?.data?.error || "Error sending OTP");
+    }
   };
 
   return (
     <div className="w-full min-h-[100vh] p-8 relative bg-pink1 flex items-center justify-center overflow-hidden">
-      {/* 🔷 Upper left square — visible with better contrast */}
       <div className="absolute top-[20%] left-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] -translate-x-1/2 -translate-y-1/2 z-[5]" />
-
-      {/* 🔷 Lower left square — visible with stronger opacity */}
       <div className="absolute top-[40%] left-0 w-[130px] h-[130px] bg-boxdark rotate-45 rounded-[12px] -translate-x-1/2 -translate-y-1/2 z-[4]" />
-
-      {/* 🔷 Upper right square — matched left one */}
       <div className="absolute bottom-[20%] right-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] translate-x-1/2 translate-y-1/2 z-[5]" />
-
-      {/* 🔷 Lower right square — matched left one */}
       <div className="absolute bottom-[40%] right-0 w-[130px] h-[130px] bg-boxdark rotate-45 rounded-[12px] translate-x-1/2 translate-y-1/2 z-[4]" />
 
-      {/* ✅ Added z-[20] and relative to ensure it floats above all rotated squares */}
-      {/* Signup Card */}
       <div className="w-full max-w-md min-w-[40%] bg-white shadow-lg rounded-sm p-8 relative z-[20]">
         <h1 className="text-xl lg:text-2xl font-semibold text-center text-darkblack1 mb-6">
           Get Started
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className='mb-4'>
-            <label htmlFor="name" className="block text-darkblack1 mb-2">
-              Name
-            </label>
+            <label htmlFor="name" className="block text-darkblack1 mb-2">Name</label>
             <input
               id="name"
               type="text"
@@ -68,9 +66,7 @@ function Signup() {
             />
           </div>
           <div className='mb-4'>
-            <label htmlFor="email" className="block text-darkblack1 mb-2">
-              Email
-            </label>
+            <label htmlFor="email" className="block text-darkblack1 mb-2">Email</label>
             <input
               id="email"
               type="email"
@@ -83,14 +79,12 @@ function Signup() {
             />
           </div>
           <div className='mb-4'>
-            <label htmlFor="Mobile Number" className="block text-darkblack1 mb-2">
-              Mobile Number
-            </label>
+            <label htmlFor="mobile_number" className="block text-darkblack1 mb-2">Mobile Number</label>
             <input
-              id="Mobile Number"
+              id="mobileNumber"
               type="tel"
-              name="Mobile Number"
-              value={SignupData.name}
+              name="mobileNumber"
+              value={SignupData.mobileNumber}
               placeholder="Enter your mobile number"
               onChange={handleChange}
               required
@@ -98,9 +92,7 @@ function Signup() {
             />
           </div>
           <div className='mb-4'>
-            <label htmlFor="password" className="block text-darkblack1 mb-2">
-              Password
-            </label>
+            <label htmlFor="password" className="block text-darkblack1 mb-2">Password</label>
             <input
               id="password"
               type="password"
@@ -113,21 +105,18 @@ function Signup() {
             />
           </div>
           <div className='mb-4'>
-            <label htmlFor=" confirmpassword" className="block text-darkblack1 mb-2">
-              Confirm Password
-            </label>
+            <label htmlFor="confirm_password" className="block text-darkblack1 mb-2">Confirm Password</label>
             <input
-              id="confirm password"
+              id="confirmPassword"
               type="password"
-              name="confirm_password"
-              value={SignupData.confirm_password}
+              name="confirmPassword"
+              value={SignupData.confirmPassword}
               placeholder="Confirm password"
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-darkpink1 focus:outline-none"
               required
             />
           </div>
-
           <div className='mb-6'>
             <label className="block text-darkblack1 mb-2">Role</label>
             <select
@@ -137,9 +126,7 @@ function Signup() {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer"
             >
-              <option value="" disabled>
-                Select Role
-              </option>
+              <option value="" disabled>Select Role</option>
               <option value="Seeker">Seeker</option>
               <option value="Provider">Provider</option>
             </select>
@@ -155,11 +142,9 @@ function Signup() {
 
         <p className="text-sm text-gray-500 gap-x-1 mt-6 text-center flex justify-center">
           Already have an account?{" "}
-          <p className="">
-            <a href="/login" className="m-1 text-red-500 font-medium underline">
-              Log in
-            </a>
-          </p>
+          <a href="/login" className="m-1 text-red-500 font-medium underline">
+            Log in
+          </a>
         </p>
       </div>
     </div>

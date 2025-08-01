@@ -1,20 +1,35 @@
-import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import HomePage from "./routes/HomePage";
 import Login from "./routes/Login";
 import Signup from "./routes/Signup";
+import OtpVerify from "./routes/Otp_verify";
 import ProviderDashPage from "./routes/provider/ProviderDashPage";
 import DashboardArea from "./components/ProviderComponents/DashboardArea";
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from "./context/ProtectedRoute";
+import { DummyDashboard } from "./routes/DummyDashboard";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route element={<AuthProvider><Outlet /></AuthProvider>}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/otpverify" element={<OtpVerify />} />
 
-      {/* Provider Routes */}
-      <Route path="/providerDashboard" element={<ProviderDashPage />}>
-        <Route index element={<DashboardArea/>} />
+        {/* ✅ Protected Route */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/providerDashboard" element={<ProviderDashPage />}>
+            <Route index element={<DashboardArea />} />
+          </Route>
+          <Route path="/DummyDashboard" element={<DummyDashboard />} />
+        </Route>
       </Route>
     </>
   )
