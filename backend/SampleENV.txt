@@ -1,0 +1,8 @@
+PORT=8005
+CORS_ORIGIN=*
+JWT_SECRET=MealMatch
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_EXPIRY=3d
+EMAIL_USER=apna email use karo bhai
+EMAIL_PASS=apna password banao
+MONGODB_URI=mongodb+srv://artsofnature:Sks1234@mealmatch.smi84vi.mongodb.net
