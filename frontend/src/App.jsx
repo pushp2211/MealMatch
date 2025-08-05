@@ -5,6 +5,7 @@ import Signup from "./routes/Signup";
 import ProviderDashPage from "./routes/provider/ProviderDashPage";
 import DashboardArea from "./components/ProviderComponents/DashboardArea";
 import GoogleMapView from "./routes/provider/GoogleMapView";
+import Post from "./components/PostFood/Post";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -17,6 +18,7 @@ const App = createBrowserRouter(
       <Route path="/providerDashboard" element={<ProviderDashPage />}>
         <Route index element={<DashboardArea/>} />
         <Route path="find-seeker" element={<GoogleMapView/>} />
+        <Route path="post-food" element={<Post/>}/>
       </Route>
     </>
   )
