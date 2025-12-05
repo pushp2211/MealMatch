@@ -27,12 +27,14 @@ const App = createBrowserRouter(
         <Route path="/otpverify" element={<OtpVerify />} />
 
         {/* ✅ Protected Route */}
-        <Route element={<ProtectedRoute />}>
+        {/* <Route element={<ProtectedRoute />}> */}
           <Route path="/providerDashboard" element={<ProviderDashPage />}>
             <Route index element={<DashboardArea />} />
+            <Route path="find-seeker" element={<GoogleMapView />} />
+            <Route path="post-food" element={<Post />} />
           </Route>
           <Route path="/DummyDashboard" element={<DummyDashboard />} />
-        </Route>
+        {/* </Route> */}
       </Route>
     </>
   )
