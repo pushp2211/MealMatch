@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser";
 import register from "./routes/auth.route.js";
+import foodRouter from "./routes/food.route.js";
 
 const app= express();
 
@@ -14,7 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/',register);
-
+app.use('/foods',foodRouter)
 
 
 
