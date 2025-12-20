@@ -5,7 +5,7 @@ function DashboardArea() {
             <div className="bg-dashbg1 w-full h-full px-5 py-7 flex flex-col gap-y-5 overflow-auto scrollbar-thin scrollbar-webkit">
                 <div className="w-full bg-gradient-to-r from-[#e17b6a] to bg-[#ce472f] rounded-md p-5 flex flex-col justify-around gap-2">
                     <div className="text-xl md:text-2xl font-bold text-white">
-                        Welcome back, Sarah Johnson!
+                        Welcome back, Shivanshu Pathak!
                     </div>
                     <div className="text-md text-gray-200">
                         Ready to make a difference? Share your surplus food with those in need.
@@ -13,9 +13,9 @@ function DashboardArea() {
                 </div>
                 {/* Dash Stats */}
                 <div className="grid grid-rows md:grid-cols-3 gap-4 mb-6">
-                    <StatBox label="Total Donations" value={47} color="text-black" />
-                    <StatBox label="People Fed" value={234} color="text-black" />
-                    <StatBox label="Active Listings" value={3} color="text-black" />
+                    <StatBox label="Total Donations" value={0} color="text-black" />
+                    <StatBox label="People Fed" value={0} color="text-black" />
+                    <StatBox label="Active Listings" value={0} color="text-black" />
                 </div>
 
                 {/* Quick Actions and recent activity */}
@@ -24,9 +24,9 @@ function DashboardArea() {
                         <div className="p-4 text-xl font-medium border-b-2 border-pink2">
                             Recent Activity
                         </div>
-                        <RecentCard title="Wedding Reception Food" location="Downtown Community Center" time="2 hours"/>
-                        <RecentCard title="Wedding Reception Food" location="Downtown Community Center" time="2 hours"/>
-                        <RecentCard title="Wedding Reception Food" location="Downtown Community Center" time="2 hours"/>
+                        <RecentCard title="No Recent Activity" location="" time=""/>
+                        {/* <RecentCard title="Wedding Reception Food" location="Downtown Community Center" time="2 hours"/>
+                        <RecentCard title="Wedding Reception Food" location="Downtown Community Center" time="2 hours"/> */}
                     </div>
                     <div className="w-full bg-dashcard1 rounded-md flex flex-col border-2 border-pink2 shadow-[3px_3px_3px_-1px_rgba(0,0,0,0.3)]">
                         <div className="p-4 text-xl font-medium border-b-2 border-pink2">
