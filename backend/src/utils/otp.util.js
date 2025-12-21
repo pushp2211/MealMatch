@@ -1,44 +1,15 @@
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-
 dotenv.config();
+
+import { sendEmail } from "./brevoEmail.util.js";
+import { emailTemplates } from "./emailTemplates.util.js";
 
 // In-memory OTP store (Redis in production)
 const otpStore = new Map();
 
-// Stable Gmail SMTP config
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password
-  },
-  connectionTimeout: 10_000,
-});
-
-// Verify SMTP on startup
-transporter.verify((err) => {
-  if (err) {
-    console.error("SMTP not ready:", err.message);
-  } else {
-    console.log("SMTP ready");
-  }
-});
-
 function generateOTP(length = 6) {
   return crypto.randomInt(10 ** (length - 1), 10 ** length).toString();
-}
-
-async function sendOTP(email, otp) {
-  await transporter.sendMail({
-    from: `"MealMatch" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Your OTP for Signup Verification",
-    text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
-  });
 }
 
 function storeOTP(email, otp, signupData, ttlMs = 5 * 60 * 1000) {
@@ -53,6 +24,7 @@ function storeOTP(email, otp, signupData, ttlMs = 5 * 60 * 1000) {
 // STEP 1: Request / Resend OTP
 export async function requestOTP(email, signupData) {
   const otp = generateOTP();
+  const ttlMs = 5 * 60 * 1000;
 
   // reuse signupData on resend
   const existing = otpStore.get(email);
@@ -62,10 +34,17 @@ export async function requestOTP(email, signupData) {
     throw new Error("Signup data not found. Please signup again.");
   }
 
-  storeOTP(email, otp, dataToStore);
+  storeOTP(email, otp, dataToStore, ttlMs);
 
   try {
-    await sendOTP(email, otp);
+    // await sendOTP(email, otp);
+    // return { success: true };
+    const { subject, html } = emailTemplates.signupOtp({
+      otp,
+      validityMinutes: 5,
+    });
+
+    await sendEmail({ to: email, subject, html });
     return { success: true };
   } catch (err) {
     otpStore.delete(email);
@@ -91,7 +70,6 @@ export function verifyOTP(email, enteredOtp) {
   if (record.attempts >= 5) {
     // Invalidate OTP but keep signup data
     record.otp = null;
-    record.expiresAt = Date.now(); // expire immediately
 
     return {
       success: false,
@@ -107,5 +85,3 @@ export function verifyOTP(email, enteredOtp) {
   otpStore.delete(email);
   return { success: true, data: signupData };
 }
-
-

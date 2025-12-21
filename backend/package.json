@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",
     "nodemailer": "^7.0.5",
+    "sib-api-v3-sdk": "^8.5.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
