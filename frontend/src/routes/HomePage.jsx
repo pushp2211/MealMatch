@@ -1,4 +1,3 @@
-import React from "react";
 import HomeNav from "../components/HomeComponents/Navbar";
 import FirstPage from "../components/HomeComponents/FirstPage";
 import Footer from "../components/HomeComponents/Footer";

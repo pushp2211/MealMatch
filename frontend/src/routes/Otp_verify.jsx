@@ -1,108 +1,254 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import { useNavigate, useLocation } from "react-router-dom";
+
+// const API_URL = import.meta.env.VITE_API_URL;
+
+// function OtpVerify() {
+//   const [otp, setOtp] = useState("");
+//   const [timeLeft, setTimeLeft] = useState(30);
+//   const [loading, setLoading] = useState(false);
+
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   const email = location.state?.email;
+
+//   // Prevent invalid access
+//   useEffect(() => {
+//     if (!email) {
+//       navigate("/signup", { replace: true });
+//     }
+//   }, [email, navigate]);
+
+//   // Countdown timer
+//   useEffect(() => {
+//     if (timeLeft <= 0) return;
+
+//     const interval = setInterval(() => {
+//       setTimeLeft((prev) => prev - 1);
+//     }, 1000);
+
+//     return () => clearInterval(interval);
+//   }, [timeLeft]);
+
+//   const handleChange = (e) => {
+//     const value = e.target.value.replace(/\D/g, "");
+//     if (value.length <= 6) setOtp(value);
+//   };
+
+//   const handleVerify = async (e) => {
+//     e.preventDefault();
+
+//     if (otp.length !== 6) {
+//       return alert("Please enter a 6-digit OTP");
+//     }
+
+//     try {
+//       setLoading(true);
+
+//       await axios.post(`${API_URL}/api/auth/signup`, {
+//         email,
+//         otp,
+//       });
+
+//       alert("Signup successful!");
+//       navigate("/login", { replace: true });
+//     } catch (err) {
+//       setOtp("");
+//       alert(err.response?.data?.error || "OTP verification failed");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleResend = async () => {
+//     try {
+//       setLoading(true);
+
+//       await axios.post(`${API_URL}/api/auth/send-otp`, { email });
+
+//       setTimeLeft(30);
+//       setOtp("");
+//       alert("OTP resent successfully");
+//     } catch (err) {
+//       alert(err.response?.data?.error || "Failed to resend OTP");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="p-4 w-full min-h-screen flex items-center justify-center bg-[#fadcd9]">
+//       <form
+//         onSubmit={handleVerify}
+//         className="bg-white p-6 rounded shadow-md w-full max-w-sm"
+//       >
+//         <h2 className="text-xl font-semibold mb-2 text-center">
+//           OTP Verification
+//         </h2>
+
+//         <p className="text-sm text-gray-600 mb-4 text-center">
+//           OTP sent to <span className="font-medium">{email}</span>
+//         </p>
+
+//         <input
+//           type="text"
+//           value={otp}
+//           onChange={handleChange}
+//           placeholder="Enter 6-digit OTP"
+//           autoFocus
+//           className="w-full px-4 py-2 border rounded mb-4 focus:outline-none focus:ring-1 focus:ring-darkpink1"
+//         />
+
+//         <button
+//           type="submit"
+//           disabled={loading}
+//           className={`w-full py-2 rounded transition ${
+//             loading ? "bg-gray-400" : "bg-darkpink1 hover:bg-darkpink2"
+//           } text-white`}
+//         >
+//           {loading ? "Verifying..." : "Verify OTP"}
+//         </button>
+
+//         {timeLeft > 0 ? (
+//           <p className="text-sm text-gray-600 text-center mt-3">
+//             Resend OTP in {timeLeft}s
+//           </p>
+//         ) : (
+//           <button
+//             type="button"
+//             onClick={handleResend}
+//             disabled={loading}
+//             className="mt-3 text-sm text-center text-red-500 underline hover:text-red-700 disabled:text-gray-400"
+//           >
+//             Resend OTP
+//           </button>
+//         )}
+//       </form>
+//     </div>
+//   );
+// }
+
+// export default OtpVerify;
+
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function OtpVerify() {
-  const [otp, setOtp] = useState('');
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [canResend, setCanResend] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-
-  const user = JSON.parse(localStorage.getItem("pendingSignup"));
-
-  useEffect(() => {
-    if (!user) {
-      alert("No user data found. Redirecting to signup.");
-      navigate("/signup");
-    }
-  }, [navigate, user]);
+  const location = useLocation();
+  const email = location.state?.email;
 
   useEffect(() => {
-    let interval;
-    if (timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else {
-      setCanResend(true);
+    if (!email) {
+      navigate("/signup", { replace: true });
     }
+  }, [email, navigate]);
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
     return () => clearInterval(interval);
   }, [timeLeft]);
 
   const handleChange = (e) => {
-    const onlyDigits = e.target.value.replace(/\D/g, "");
-    if (onlyDigits.length <= 6) setOtp(onlyDigits);
-  };
-
-  const handleResend = async () => {
-    try {
-      await axios.post("http://localhost:8005/send-otp", { email: user.email });
-      alert("OTP resent.");
-      setTimeLeft(60);
-      setCanResend(false);
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      alert("Failed to resend OTP.");
-    }
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 6) setOtp(value);
   };
 
   const handleVerify = async (e) => {
     e.preventDefault();
 
-    if (!otp || otp.length < 4) {
-      return alert("Please enter a valid OTP.");
+    if (otp.length !== 6) {
+      return alert("Please enter a 6-digit OTP");
     }
 
     try {
-      const res = await axios.post("http://localhost:8005/signup", {
-        ...user,
-        otp
+      setLoading(true);
+
+      await axios.post(`${API_URL}/api/auth/signup`, {
+        email,
+        otp,
       });
 
-      if (res.data.success) {
-        localStorage.removeItem("pendingSignup");
-        alert("Signup successful!");
-        navigate("/login");
-      } else {
-        alert(res.data.error || "OTP verification failed");
-      }
+      alert("Signup successful!");
+      navigate("/login", { replace: true });
     } catch (err) {
-      console.error(err.response?.data || err.message);
-      alert("Server error during signup.");
+      setOtp("");
+      alert(err.response?.data?.error || "OTP verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      setLoading(true);
+
+      await axios.post(`${API_URL}/api/auth/signup/resend-otp`, { email });
+
+      setTimeLeft(30);
+      setOtp("");
+      alert("OTP resent successfully");
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to resend OTP");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-4 w-full min-h-screen flex items-center justify-center bg-[#fadcd9]">
       <form onSubmit={handleVerify} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
-        <h2 className="text-xl font-semibold mb-4 text-center">OTP Verification</h2>
+        <h2 className="text-xl font-semibold mb-2 text-center">OTP Verification</h2>
+
+        <p className="text-sm text-gray-600 mb-4 text-center">
+          OTP sent to <span className="font-medium">{email}</span>
+        </p>
 
         <input
           type="text"
           value={otp}
           onChange={handleChange}
-          placeholder="Enter OTP"
+          placeholder="Enter 6-digit OTP"
           autoFocus
-          className="w-full px-4 py-2 border rounded mb-4 focus:outline-none focus:ring-1 focus:ring-darkpink1"
+          className="w-full px-4 py-2 border rounded mb-4"
         />
 
         <button
           type="submit"
-          className="w-full bg-darkpink1 hover:bg-darkpink2 text-white py-2 rounded transition duration-200 mb-3"
+          disabled={loading}
+          className={`w-full py-2 rounded ${
+            loading ? "bg-gray-400" : "bg-darkpink1 hover:bg-darkpink2"
+          } text-white`}
         >
-          Verify OTP
+          {loading ? "Verifying..." : "Verify OTP"}
         </button>
 
-        {canResend ? (
+        {timeLeft > 0 ? (
+          <p className="text-sm text-gray-600 text-center mt-3">
+            Resend OTP in {timeLeft}s
+          </p>
+        ) : (
           <button
             type="button"
             onClick={handleResend}
-            className="text-blue-500 underline text-sm"
+            disabled={loading}
+            className="mt-3 text-sm text-center text-red-500 underline"
           >
             Resend OTP
           </button>
-        ) : (
-          <p className="text-sm text-gray-600 text-center">Resend in {timeLeft}s</p>
         )}
       </form>
     </div>

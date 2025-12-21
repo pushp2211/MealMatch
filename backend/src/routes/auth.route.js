@@ -1,18 +1,48 @@
-// src/routes/auth.routes.js
+import { Router } from "express";
+const router = Router();
 
-import express from 'express';
-import { sendSignupOtp, signup } from '../controllers/signup.controller.js';
-import { login, logout } from '../controllers/login.controller.js';
-import { getMe } from '../controllers/login.controller.js';
-import { verifyJwt } from '../middlewares/verifyJwt.middleware.js';
+import {
+  sendSignupOtp,
+  resendSignupOtp,
+  signup,
+  login,
+  logout,
+  getMe,
+} from "../controllers/index.js";
 
-const register = express.Router();
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  sendSignupOtpSchema,
+  resendOtpSchema,
+  signupSchema,
+} from "../validators/index.js";
 
-register.post('/send-otp', sendSignupOtp);
-register.post('/signup', signup);
-register.post('/login',login);
-register.post('/logout',logout);
-register.get('/getme',verifyJwt,getMe);
+import { verifyJwt } from "../middlewares/verifyJwt.middleware.js";
 
+// SIGNUP FLOW
+router.post(
+  "/signup/send-otp",
+  validate(sendSignupOtpSchema),
+  sendSignupOtp
+);
 
-export default register;
+router.post(
+  "/signup/resend-otp",
+  validate(resendOtpSchema),
+  resendSignupOtp
+);
+
+router.post(
+  "/signup",
+  validate(signupSchema),
+  signup
+);
+
+// LOGIN / LOGOUT
+router.post("/login", login);
+router.post("/logout", logout);
+
+// GET CURRENT USER
+router.get("/getme", verifyJwt, getMe);
+
+export default router;

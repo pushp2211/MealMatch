@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import { Food } from "../models/food.model.js";
+import { Food } from "../../models/food.model.js";
 
 // Create food
 export const createFood = async (req, res) => {

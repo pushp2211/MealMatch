@@ -1,42 +1,51 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Signup() {
-  const [SignupData, setSignup] = useState({
+  const [signupData, setSignupData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
+    confirmPassword: "",
     role: "",
-    mobileNumber: "",
-    confirmPassword: ""
   });
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSignup((prev) => ({ ...prev, [name]: value }));
+    setSignupData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-     console.log("Sending signup data:", {SignupData});
 
-    if (SignupData.password !== SignupData.confirmPassword) {
-      return alert("Passwords do not match.");
+    if (signupData.password !== signupData.confirmPassword) {
+      return alert("Passwords do not match");
     }
 
     try {
-      const res = await axios.post("http://localhost:8005/send-otp", {
-        email: SignupData.email
-      });
+      await axios.post(`${API_URL}/api/auth/signup/send-otp`,
+        {
+          name: signupData.name,
+          email: signupData.email,
+          phone: signupData.phone,
+          password: signupData.password,
+          role: signupData.role, // "provider" | "seeker"
+        }
+      );
 
-      alert("OTP sent to your email.");
-      localStorage.setItem("pendingSignup", JSON.stringify(SignupData));
-      navigate("/otpverify");
+      alert("OTP sent to your email");
+      // navigating to otp page and also sending email
+      navigate("/otpverify", {
+        state: { email: signupData.email },
+      });
     } catch (err) {
       console.error(err.response?.data || err.message);
-      alert(err.response?.data?.error || "Error sending OTP");
+      alert(err.response?.data?.error || "Failed to send OTP");
     }
   };
 
@@ -58,7 +67,7 @@ function Signup() {
               id="name"
               type="text"
               name="name"
-              value={SignupData.name}
+              value={signupData.name}
               placeholder="Enter your name"
               onChange={handleChange}
               required
@@ -71,7 +80,7 @@ function Signup() {
               id="email"
               type="email"
               name="email"
-              value={SignupData.email}
+              value={signupData.email}
               placeholder="Enter your email"
               onChange={handleChange}
               required
@@ -81,10 +90,10 @@ function Signup() {
           <div className='mb-4'>
             <label htmlFor="mobile_number" className="block text-darkblack1 mb-2">Mobile Number</label>
             <input
-              id="mobileNumber"
+              id="phone"
               type="tel"
-              name="mobileNumber"
-              value={SignupData.mobileNumber}
+              name="phone"
+              value={signupData.phone}
               placeholder="Enter your mobile number"
               onChange={handleChange}
               required
@@ -97,7 +106,7 @@ function Signup() {
               id="password"
               type="password"
               name="password"
-              value={SignupData.password}
+              value={signupData.password}
               placeholder="Enter password"
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-darkpink1 focus:outline-none"
@@ -110,7 +119,7 @@ function Signup() {
               id="confirmPassword"
               type="password"
               name="confirmPassword"
-              value={SignupData.confirmPassword}
+              value={signupData.confirmPassword}
               placeholder="Confirm password"
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-darkpink1 focus:outline-none"
@@ -121,14 +130,14 @@ function Signup() {
             <label className="block text-darkblack1 mb-2">Role</label>
             <select
               name="role"
-              value={SignupData.role}
+              value={signupData.role}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer"
             >
               <option value="" disabled>Select Role</option>
-              <option value="Seeker">Seeker</option>
-              <option value="Provider">Provider</option>
+              <option value="seeker">Seeker</option>
+              <option value="provider">Provider</option>
             </select>
           </div>
 
