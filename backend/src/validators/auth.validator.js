@@ -6,7 +6,6 @@ export const sendSignupOtpSchema = z.object({
   email: z.string().email().transform(e => e.toLowerCase()),
   phone: z.string().regex(/^\d{10}$/),
   password: z.string().min(6),
-  role: z.enum(["provider", "seeker"]),
 });
 
 // STEP 1b: Resend OTP

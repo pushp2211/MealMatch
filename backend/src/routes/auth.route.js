@@ -7,17 +7,19 @@ import {
   signup,
   login,
   logout,
+  logoutAll,
   getMe,
+  refresh
 } from "../controllers/index.js";
 
-import { validate } from "../middlewares/validate.middleware.js";
 import {
   sendSignupOtpSchema,
   resendOtpSchema,
   signupSchema,
 } from "../validators/index.js";
 
-import { verifyJwt } from "../middlewares/verifyJwt.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 // SIGNUP FLOW
 router.post(
@@ -40,9 +42,11 @@ router.post(
 
 // LOGIN / LOGOUT
 router.post("/login", login);
+router.post("/refresh", refresh);
 router.post("/logout", logout);
+router.post("/logout-all", protect, logoutAll);
 
 // GET CURRENT USER
-router.get("/getme", verifyJwt, getMe);
+router.get("/getme", protect, getMe);
 
 export default router;

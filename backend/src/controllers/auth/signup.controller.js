@@ -49,7 +49,6 @@ export async function signup(req, res) {
       email: signupData.email,
       phone: signupData.phone,
       password: hashedPassword,
-      role: signupData.role,
       isVerified: true,
     });
 

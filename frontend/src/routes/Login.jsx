@@ -1,60 +1,78 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "../context/AuthContext";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Login() {
-  const [formData, setData] = useState({
+  const navigate = useNavigate();
+  const { setUser } = useAuth(); // FIX: Get setUser from context
+
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "Seeker"
+    role: "seeker",
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = uuidv4();
+      localStorage.setItem("deviceId", deviceId);
+    }
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
+    setIsSubmitting(true);
 
     try {
+      const deviceId = localStorage.getItem("deviceId");
+
       const res = await axios.post(
-        "http://localhost:8005/login",
+        `${API_URL}/api/auth/login`,
         formData,
         {
-          withCredentials: true, // crucial for handling cookies (accessToken, refreshToken)
+          withCredentials: true,
           headers: {
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+            "x-device-id": deviceId,
+          },
         }
       );
 
-      setSuccess("Login successful!");
+      // FIX: Update AuthContext with user data
+      setUser(res.data.user);
 
-      // Redirect based on role
-      if (formData.role === "Provider") {
-        window.location.href = "/providerDashboard";
+      // Navigate based on role
+      if (res.data.user.role === "provider") {
+        navigate("/providerDashboard", { replace: true });
       } else {
-        window.location.href = "/DummyDashboard";
+        navigate("/DummyDashboard", { replace: true });
       }
-
     } catch (err) {
-      console.error(err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      console.error("Login error:", err);
+      setError(err.response?.data?.message || "Login failed");
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="w-full p-4 relative min-h-[100vh] bg-pink1 flex items-center justify-center overflow-hidden">
-      {/* 🔷 Decorative squares */}
+      {/* Decorative squares */}
       <div className="absolute top-[20%] left-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] -translate-x-1/2 -translate-y-1/2 z-[5]" />
       <div className="absolute top-[40%] left-0 w-[130px] h-[130px] bg-boxdark rotate-45 rounded-[12px] -translate-x-1/2 -translate-y-1/2 z-[4]" />
       <div className="absolute bottom-[20%] right-0 w-[260px] h-[260px] bg-boxlight rotate-45 rounded-[16px] translate-x-1/2 translate-y-1/2 z-[5]" />
@@ -66,7 +84,6 @@ function Login() {
         </h1>
 
         {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
-        {success && <p className="text-green-600 mb-4 text-center">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className='mb-4'>
@@ -79,7 +96,8 @@ function Login() {
               onChange={handleChange}
               placeholder='Enter your email'
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
             />
           </div>
 
@@ -93,7 +111,8 @@ function Login() {
               onChange={handleChange}
               placeholder='Enter your password'
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:opacity-50"
             />
           </div>
 
@@ -103,23 +122,25 @@ function Login() {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer disabled:opacity-50"
             >
-              <option value="Seeker">Seeker</option>
-              <option value="Provider">Provider</option>
+              <option value="seeker">Seeker</option>
+              <option value="provider">Provider</option>
             </select>
           </div>
 
           <button
             type='submit'
-            className="w-full bg-darkpink1 hover:bg-darkpink2 text-white py-2 rounded-sm transition duration-200 cursor-pointer active:scale-95"
+            disabled={isSubmitting}
+            className="w-full bg-darkpink1 hover:bg-darkpink2 text-white py-2 rounded-sm transition duration-200 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Log in
+            {isSubmitting ? "Logging in..." : "Log in"}
           </button>
         </form>
 
         <p className="text-sm text-gray-500 mt-6 text-center flex justify-center">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <p className="animate-bounce">
             <a href="/signup" className="m-1 text-red-500 font-medium hover:underline">
               Sign up!

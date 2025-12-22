@@ -10,9 +10,9 @@ function Signup() {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "",
   });
 
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,18 +23,21 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submit
+    if (loading) return;
+
     if (signupData.password !== signupData.confirmPassword) {
       return alert("Passwords do not match");
     }
 
     try {
+      setLoading(true);
       await axios.post(`${API_URL}/api/auth/signup/send-otp`,
         {
           name: signupData.name,
           email: signupData.email,
           phone: signupData.phone,
           password: signupData.password,
-          role: signupData.role, // "provider" | "seeker"
         }
       );
 
@@ -46,6 +49,8 @@ function Signup() {
     } catch (err) {
       console.error(err.response?.data || err.message);
       alert(err.response?.data?.error || "Failed to send OTP");
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -126,30 +131,23 @@ function Signup() {
               required
             />
           </div>
-          <div className='mb-6'>
-            <label className="block text-darkblack1 mb-2">Role</label>
-            <select
-              name="role"
-              value={signupData.role}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-sm bg-white focus:ring-1 focus:ring-darkpink1 focus:outline-none cursor-pointer"
-            >
-              <option value="" disabled>Select Role</option>
-              <option value="seeker">Seeker</option>
-              <option value="provider">Provider</option>
-            </select>
-          </div>
 
           <button
             type="submit"
-            className="w-full bg-darkpink1 hover:bg-darkpink2 text-white py-2 rounded-sm transition duration-200 cursor-pointer active:scale-95"
+            disabled={loading}
+            className={`w-full py-2 rounded-sm transition duration-200
+              ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-darkpink1 hover:bg-darkpink2 text-white active:scale-95 cursor-pointer"
+              }
+            `}
           >
-            Sign Up
+            {loading ? "Sending OTP..." : "Sign Up"}
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 gap-x-1 mt-6 text-center flex justify-center">
+        <p className="text-sm text-gray-500 gap-x-1 mt-6 flex justify-center items-center">
           Already have an account?{" "}
           <a href="/login" className="m-1 text-red-500 font-medium underline">
             Log in
