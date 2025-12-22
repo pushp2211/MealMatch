@@ -146,6 +146,8 @@ export const logoutAll = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
+    // Preventing from bf cache
+    res.setHeader("Cache-Control", "no-store");
     // Return the user info from the decoded token
     res.json({ 
       success: true,

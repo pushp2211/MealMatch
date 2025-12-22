@@ -49,6 +49,9 @@ export const refresh = async (req, res) => {
       sessionId: session._id,
     });
 
+    // Tells browsers not to store this response i.e. cache control
+    res.setHeader("Cache-Control", "no-store");
+
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       sameSite: "Lax",

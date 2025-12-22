@@ -27,39 +27,26 @@ const App = createBrowserRouter(
     <>
       <Route element={<AuthProvider><Outlet /></AuthProvider>}>
       {/* Public Routes */}
-        <Route path="/" element={
-          <RedirectHandler>
-            <HomePage />
-          </RedirectHandler>
-        } />
-        
-        <Route path="/login" element={
-          <RedirectHandler>
-            <Login />
-          </RedirectHandler>
-        } />
+        <Route path="/" element={<RedirectHandler><HomePage /></RedirectHandler>} />
+        <Route path="/login" element={<RedirectHandler><Login /></RedirectHandler>} />
+        <Route path="/signup" element={<RedirectHandler><Signup /></RedirectHandler>} />
+        <Route path="/otpverify" element={<RedirectHandler><OtpVerify /></RedirectHandler>} />
 
-        <Route path="/signup" element={
-          <RedirectHandler>
-            <Signup />
-          </RedirectHandler>
-        } />
-        <Route path="/otpverify" element={
-          <RedirectHandler>
-            <OtpVerify />
-          </RedirectHandler>
-        } />
-
-        {/* Protected Route */}
+        {/* Protected Provider only Routes */}
         <Route element={<ProtectedRoute allowedRole="provider" />}>
           <Route path="/providerDashboard" element={<ProviderDashPage />}>
             <Route index element={<DashboardArea />} />
             <Route path="find-seeker" element={<GoogleMapView />} />
             <Route path="post-food" element={<Post />} />
           </Route>
-
+        </Route>
+        
+        {/* GENERIC PROTECTED Routes (Any logged in user) */}
+        {/* Note: Pass no allowedRole to allow any authenticated user */}
+        <Route element={<ProtectedRoute allowedRole="seeker"/>}> 
           <Route path="/DummyDashboard" element={<DummyDashboard />} />
         </Route>
+
       </Route>
     </>
   )

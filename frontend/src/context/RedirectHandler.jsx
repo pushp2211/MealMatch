@@ -16,7 +16,8 @@ const RedirectHandler = ({ children }) => {
       if (publicPages.includes(location.pathname)) {
         if (user.role === "provider") {
           navigate("/providerDashboard", { replace: true });
-        } else {
+        } 
+        else if(user.role === "seeker"){
           navigate("/DummyDashboard", { replace: true });
         }
       }

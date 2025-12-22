@@ -4,23 +4,39 @@ import api from "../utils/axios";
 const AuthContext = createContext();
 
 // BroadcastChannel for cross-tab communication
-const authChannel = typeof window !== 'undefined' 
-  ? new BroadcastChannel('auth_channel')
-  : null;
+const authChannel =
+  typeof window !== "undefined"
+    ? new BroadcastChannel("auth_channel")
+    : null;
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(undefined); // undefined = loading, null = logged out, object = logged in
+  // undefined = loading, null = logged out, object = logged in
+  const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(true);
 
   // Wrapper to sync across tabs
   const setUserWithSync = (userData) => {
     setUser(userData);
-    // Notify other tabs
     if (authChannel) {
-      authChannel.postMessage({ type: 'AUTH_CHANGE', user: userData });
+      authChannel.postMessage({ type: "AUTH_CHANGE", user: userData });
     }
   };
 
+  /* FIX: Handle browser back-forward cache (bfcache) */
+  useEffect(() => {
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        // Page restored from bfcache → auth memory is unsafe
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
+  /* Existing auth check */
   useEffect(() => {
     let mounted = true;
 
@@ -30,12 +46,10 @@ export const AuthProvider = ({ children }) => {
         if (mounted) {
           setUser(res.data.user);
         }
-      } catch (err) {
-        // Silently handle 401 - user is just not logged in
+      } catch {
         if (mounted) {
           setUser(null);
         }
-        // Don't throw or log - this is expected for non-authenticated users
       } finally {
         if (mounted) {
           setLoading(false);
@@ -47,19 +61,19 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes from other tabs
     const handleMessage = (event) => {
-      if (event.data.type === 'AUTH_CHANGE') {
+      if (event.data.type === "AUTH_CHANGE") {
         setUser(event.data.user);
       }
     };
 
     if (authChannel) {
-      authChannel.addEventListener('message', handleMessage);
+      authChannel.addEventListener("message", handleMessage);
     }
 
     return () => {
       mounted = false;
       if (authChannel) {
-        authChannel.removeEventListener('message', handleMessage);
+        authChannel.removeEventListener("message", handleMessage);
       }
     };
   }, []);

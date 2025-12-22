@@ -35,6 +35,20 @@ app.use(express.json());
 // For handling/accesing refreshToken from cookies.
 app.use(cookieParser()); 
 
+
+// ----------- CRITICAL FIX: Disable caching for ALL auth routes
+app.use("/api/auth", (req, res, next) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  next();
+});
+// -----------------------------------------------------------------
+
 // for backend api calls
 app.use("/api", routes);
 

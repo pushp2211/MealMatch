@@ -49,16 +49,12 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err);
         
-        // Clear cookies
-        document.cookie = 'accessToken=; Max-Age=0; path=/;';
-        document.cookie = 'refreshToken=; Max-Age=0; path=/;';
-        
         // Only redirect if on PROTECTED pages
         const publicPages = ['/', '/login', '/signup', '/otpverify'];
         const currentPath = window.location.pathname;
         
         if (!publicPages.includes(currentPath) && !publicPages.some(page => currentPath.startsWith(page))) {
-          window.location.href = "/login";
+          window.location.replace("/login");
         }
         
         return Promise.reject(err);
