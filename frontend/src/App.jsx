@@ -24,6 +24,7 @@ import DashboardArea from "./pages/provider/DashboardArea";
 import PostFood from "./pages/provider/PostFood/PostFood";
 import FindSeeker from "./pages/provider/FindSeeker/FindSeeker";
 import Profile from "./pages/profile/Profile";
+import Settings from "./pages/settings/Settings";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -42,6 +43,7 @@ const App = createBrowserRouter(
             <Route path="find-seeker" element={<FindSeeker />} />
             <Route path="post-food" element={<PostFood />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
         
