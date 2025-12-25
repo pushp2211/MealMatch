@@ -9,42 +9,44 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from "./context/ProtectedRoute";
 import RedirectHandler from "./context/RedirectHandler";
 
-import HomePage from "./routes/HomePage";
-import Login from "./routes/Login";
-import Signup from "./routes/Signup";
-import OtpVerify from "./routes/Otp_verify";
+// Auth and common page
+import HomePage from "./pages/public/HomePage";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import OTPPage from "./pages/auth/OTP";
 
-import ProviderDashPage from "./routes/provider/ProviderDashPage";
-import DashboardArea from "./components/ProviderComponents/DashboardArea";
+// Layouts
+import SeekerLayout from "./layouts/SeekerLayout";
+import ProviderLayout from "./layouts/ProviderLayout";
 
-import GoogleMapView from "./routes/provider/GoogleMapView";
-import Post from "./components/PostFood/Post";
-
-import { DummyDashboard } from "./routes/DummyDashboard";
+// Provider pages
+import DashboardArea from "./pages/provider/DashboardArea";
+import PostFood from "./pages/provider/PostFood/PostFood";
+import FindSeeker from "./pages/provider/FindSeeker/FindSeeker";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route element={<AuthProvider><Outlet /></AuthProvider>}>
       {/* Public Routes */}
-        <Route path="/" element={<RedirectHandler><HomePage /></RedirectHandler>} />
-        <Route path="/login" element={<RedirectHandler><Login /></RedirectHandler>} />
-        <Route path="/signup" element={<RedirectHandler><Signup /></RedirectHandler>} />
-        <Route path="/otpverify" element={<RedirectHandler><OtpVerify /></RedirectHandler>} />
+        <Route path="/" element={<RedirectHandler><HomePage/></RedirectHandler>} />
+        <Route path="/login" element={<RedirectHandler><Login/></RedirectHandler>} />
+        <Route path="/signup" element={<RedirectHandler><Signup/></RedirectHandler>} />
+        <Route path="/otpverify" element={<RedirectHandler><OTPPage/></RedirectHandler>} />
 
         {/* Protected Provider only Routes */}
         <Route element={<ProtectedRoute allowedRole="provider" />}>
-          <Route path="/providerDashboard" element={<ProviderDashPage />}>
+          <Route path="/providerDashboard" element={<ProviderLayout/>}>
             <Route index element={<DashboardArea />} />
-            <Route path="find-seeker" element={<GoogleMapView />} />
-            <Route path="post-food" element={<Post />} />
+            <Route path="find-seeker" element={<FindSeeker />} />
+            <Route path="post-food" element={<PostFood />} />
           </Route>
         </Route>
         
-        {/* GENERIC PROTECTED Routes (Any logged in user) */}
-        {/* Note: Pass no allowedRole to allow any authenticated user */}
+        {/* Protected Seeker only routes */}
         <Route element={<ProtectedRoute allowedRole="seeker"/>}> 
-          <Route path="/DummyDashboard" element={<DummyDashboard />} />
+          <Route path="/DummyDashboard" element={<SeekerLayout />}>
+          </Route>
         </Route>
 
       </Route>

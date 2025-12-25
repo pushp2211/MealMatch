@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const DashNavbar = ({ isMobile, isOpen, setIsOpen, setSlideIn }) => {
+const ProviderNavbar = ({ isMobile, isOpen, setIsOpen, setSlideIn }) => {
   const announcementCount = 1;
   const [isImage, setIsImage] = useState(false);
   const imgPath = "";
@@ -74,4 +74,4 @@ const DashNavbar = ({ isMobile, isOpen, setIsOpen, setSlideIn }) => {
   );
 };
 
-export default DashNavbar;
+export default ProviderNavbar;

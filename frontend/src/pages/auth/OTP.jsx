@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function OtpVerify() {
+function OTPPage() {
   const [otp, setOtp] = useState("");
   const [timeLeft, setTimeLeft] = useState(30);
   const [loading, setLoading] = useState(false);
@@ -123,4 +123,4 @@ function OtpVerify() {
   );
 }
 
-export default OtpVerify;
+export default OTPPage;

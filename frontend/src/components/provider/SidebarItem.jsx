@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const SidebarItem = React.memo(({ item, activeKey, onClick }) => {
+export const SidebarItem = React.memo(({ item, activeKey, onClick }) => {
     const activeClasses = "bg-darkpink1";
     const inactiveClasses = "bg-dashbg1 hover:bg-pink2/80";
     return (
@@ -24,5 +24,3 @@ const SidebarItem = React.memo(({ item, activeKey, onClick }) => {
         )
     )
 });
-
-export default SidebarItem;

@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
-import DashNavbar from "../../components/ProviderComponents/Navbars";
-import DashSidebar from "../../components/ProviderComponents/DashSidebar";
 import { useEffect, useState } from "react";
+import ProviderNavbar from "../components/navbar/ProviderNavbar";
+import ProviderSidebar from "../components/sidebar/ProviderSidebar";
 
 const menuItems = [
     {
@@ -35,7 +35,7 @@ const menuItems = [
     },
 ]
 
-function ProviderDashPage() {
+function ProviderLayout() {
     const [isMobile, setIsMobile] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [slideIn, setSlideIn] = useState(false);
@@ -61,9 +61,9 @@ function ProviderDashPage() {
 
     return (
         <div className='h-[100vh] w-full'>
-            <DashNavbar isMobile={isMobile} isOpen={isOpen} setIsOpen={setIsOpen} setSlideIn={setSlideIn} />
-            <div className="h-[calc(100vh-60px)] flex bg-pink1">
-                <DashSidebar
+            {/* <ProviderNavbar isMobile={isMobile} isOpen={isOpen} setIsOpen={setIsOpen} setSlideIn={setSlideIn} /> */}
+            <div className="h-[calc(100vh)] flex bg-pink1">
+                <ProviderSidebar
                     isMobile={isMobile}
                     isOpen={isOpen}
                     slideIn={slideIn}
@@ -77,4 +77,4 @@ function ProviderDashPage() {
     )
 }
 
-export default ProviderDashPage;
+export default ProviderLayout;
