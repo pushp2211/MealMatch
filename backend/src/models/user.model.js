@@ -61,6 +61,31 @@ const userSchema = new mongoose.Schema(
       select: false, // VERY important -> now everytime you do user.find() you need to explicitly ask for password, by default it wont be included/returned
     },
 
+    avatar: {
+      type: String,
+    },
+
+    bio: {
+      type: String,
+      maxlength: 300,
+      trim: true,
+    },
+
+    providerType: {
+      type: String,
+      enum: ["restaurant", "mess", "individual", "event"],
+    },
+
+    seekerType: {
+      type: String,
+      enum: ["individual", "ngo", "shelter"],
+    },
+
+    organizationName: {
+      type: String,
+      trim: true,
+    },
+    
     location: {
       type: {
         type: String,

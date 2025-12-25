@@ -1,7 +1,7 @@
 
 function DashboardArea() {
     return (
-        <>
+        
             <div className="bg-dashbg1 w-full h-full px-5 py-7 flex flex-col gap-y-5 overflow-auto scrollbar-thin scrollbar-webkit">
                 <div className="w-full bg-gradient-to-r from-[#e17b6a] to bg-[#ce472f] rounded-md p-5 flex flex-col justify-around gap-2">
                     <div className="text-xl md:text-2xl font-bold text-white">
@@ -53,7 +53,7 @@ function DashboardArea() {
                     </div>
                 </div>
             </div>
-        </>
+    
     )
 }
 

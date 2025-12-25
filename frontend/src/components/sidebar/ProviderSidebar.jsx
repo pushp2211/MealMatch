@@ -22,13 +22,13 @@ const navItems = [
   { label: 'Dashboard', path: '/providerDashboard', icon: LayoutDashboard },
   { label: 'Post Food', path: '/providerDashboard/post-food', icon: PlusCircle },
   { label: 'Map View', path: '/providerDashboard/find-seeker', icon: MapPin },
-  { label: 'Pickup Requests', path: '/requests', icon: Inbox },
-  { label: 'History', path: '/history', icon: History },
+  { label: 'Pickup Requests', path: '/providerDashboard/requests', icon: Inbox },
+  { label: 'History', path: '/providerDashboard/history', icon: History },
 ];
 
 const bottomNavItems = [
-  { label: 'Profile', path: '/profile', icon: User },
-  { label: 'Settings', path: '/settings', icon: Settings },
+  { label: 'Profile', path: '/providerDashboard/profile', icon: User },
+  { label: 'Settings', path: '/providerDashboard/settings', icon: Settings },
 ];
 
 function ProviderSidebar() {
@@ -38,7 +38,7 @@ function ProviderSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen flex flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 sticky top-0',
+        'shrink-0 h-screen flex flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 sticky top-0',
         collapsed ? 'w-[72px]' : 'w-64'
       )}
     >
