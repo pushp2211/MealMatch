@@ -20,11 +20,11 @@ import SeekerLayout from "./layouts/SeekerLayout";
 import ProviderLayout from "./layouts/ProviderLayout";
 
 // Provider pages
-import DashboardArea from "./pages/provider/DashboardArea";
 import PostFood from "./pages/provider/PostFood/PostFood";
 import FindSeeker from "./pages/provider/FindSeeker/FindSeeker";
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
+import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -39,7 +39,7 @@ const App = createBrowserRouter(
         {/* Protected Provider only Routes */}
         <Route element={<ProtectedRoute allowedRole="provider" />}>
           <Route path="/providerDashboard" element={<ProviderLayout/>}>
-            <Route index element={<DashboardArea />} />
+            <Route index element={<ProviderDashboard />} />
             <Route path="find-seeker" element={<FindSeeker />} />
             <Route path="post-food" element={<PostFood />} />
             <Route path="profile" element={<Profile />} />

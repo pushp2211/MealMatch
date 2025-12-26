@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ProviderNavbar from "../components/navbar/ProviderNavbar";
-import ProviderSidebar from "../components/sidebar/ProviderSidebar";
+import Sidebar from "../components/sidebar/Sidebar";
 
 const menuItems = [
     {
@@ -63,7 +62,7 @@ function ProviderLayout() {
         <div className='h-[100vh] w-full'>
             {/* <ProviderNavbar isMobile={isMobile} isOpen={isOpen} setIsOpen={setIsOpen} setSlideIn={setSlideIn} /> */}
             <div className="h-[calc(100vh)] flex bg-pink1">
-                <ProviderSidebar
+                <Sidebar
                     isMobile={isMobile}
                     isOpen={isOpen}
                     slideIn={slideIn}

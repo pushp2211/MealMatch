@@ -17,21 +17,27 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { mockStats, mockProvider } from '@/data/mockData';
+import { sidebarMenu } from './SidebarMenu.config';
+import { useAuth } from '@/context/AuthContext';
 
-const navItems = [
-  { label: 'Dashboard', path: '/providerDashboard', icon: LayoutDashboard },
-  { label: 'Post Food', path: '/providerDashboard/post-food', icon: PlusCircle },
-  { label: 'Map View', path: '/providerDashboard/find-seeker', icon: MapPin },
-  { label: 'Pickup Requests', path: '/providerDashboard/requests', icon: Inbox },
-  { label: 'History', path: '/providerDashboard/history', icon: History },
-];
+// const navItems = [
+//   { label: 'Dashboard', path: '/providerDashboard', icon: LayoutDashboard },
+//   { label: 'Post Food', path: '/providerDashboard/post-food', icon: PlusCircle },
+//   { label: 'Map View', path: '/providerDashboard/find-seeker', icon: MapPin },
+//   { label: 'Pickup Requests', path: '/providerDashboard/requests', icon: Inbox },
+//   { label: 'History', path: '/providerDashboard/history', icon: History },
+// ];
 
 const bottomNavItems = [
   { label: 'Profile', path: '/providerDashboard/profile', icon: User },
   { label: 'Settings', path: '/providerDashboard/settings', icon: Settings },
 ];
 
-function ProviderSidebar() {
+function Sidebar() {
+  const {user} = useAuth();
+  const role = user.role;
+  const navItems = sidebarMenu[role] || [];
+  
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -51,7 +57,7 @@ function ProviderSidebar() {
           <div className="flex flex-col">
             <span className="font-semibold text-foreground">MealMatch</span>
             <span className="text-xs text-muted-foreground">
-              Provider Portal
+              {role == "provider" ? "Provider Portal" : "Seeker Portal"}
             </span>
           </div>
         )}
@@ -183,4 +189,4 @@ function ProviderSidebar() {
   );
 }
 
-export default ProviderSidebar;
+export default Sidebar;
