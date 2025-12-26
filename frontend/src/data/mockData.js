@@ -18,9 +18,14 @@ export const mockProvider = {
     autoAcceptRadius: 5,
     autoAcceptMinRating: 4.0,
     defaultRadius: 10,
-    notifications: { email: true, push: true, sms: false },
-  },
+    notifications: {
+      email: true,
+      push: true,
+      sms: false
+    }
+  }
 };
+
 
 // Mock Dashboard Stats
 export const mockStats = {
@@ -29,8 +34,9 @@ export const mockStats = {
   completedToday: 2,
   peopleFedThisMonth: 342,
   totalDonations: 156,
-  averageRating: 4.8,
+  averageRating: 4.8
 };
+
 
 // Mock Food Posts
 export const mockFoodPosts = [
@@ -50,12 +56,12 @@ export const mockFoodPosts = [
     location: {
       lat: 12.9352,
       lng: 77.6245,
-      address: '123 Main Street, Koramangala',
+      address: '123 Main Street, Koramangala'
     },
     images: [],
     status: 'active',
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    pickupRequests: 3,
+    pickupRequests: 3
   },
   {
     id: '2',
@@ -73,12 +79,12 @@ export const mockFoodPosts = [
     location: {
       lat: 12.9352,
       lng: 77.6245,
-      address: '123 Main Street, Koramangala',
+      address: '123 Main Street, Koramangala'
     },
     images: [],
     status: 'active',
     createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    pickupRequests: 2,
+    pickupRequests: 2
   },
   {
     id: '3',
@@ -95,14 +101,15 @@ export const mockFoodPosts = [
     location: {
       lat: 12.9352,
       lng: 77.6245,
-      address: '123 Main Street, Koramangala',
+      address: '123 Main Street, Koramangala'
     },
     images: [],
     status: 'active',
     createdAt: new Date(Date.now() - 30 * 60 * 1000),
-    pickupRequests: 2,
-  },
+    pickupRequests: 2
+  }
 ];
+
 
 // Mock Seekers
 export const mockSeekers = [
@@ -114,7 +121,7 @@ export const mockSeekers = [
     totalPickups: 234,
     verified: true,
     distance: 2.3,
-    phone: '+91 98765 11111',
+    phone: '+91 98765 11111'
   },
   {
     id: '2',
@@ -124,7 +131,7 @@ export const mockSeekers = [
     totalPickups: 189,
     verified: true,
     distance: 3.1,
-    phone: '+91 98765 22222',
+    phone: '+91 98765 22222'
   },
   {
     id: '3',
@@ -134,7 +141,7 @@ export const mockSeekers = [
     totalPickups: 12,
     verified: false,
     distance: 1.5,
-    phone: '+91 98765 33333',
+    phone: '+91 98765 33333'
   },
   {
     id: '4',
@@ -144,9 +151,10 @@ export const mockSeekers = [
     totalPickups: 156,
     verified: true,
     distance: 4.2,
-    phone: '+91 98765 44444',
-  },
+    phone: '+91 98765 44444'
+  }
 ];
+
 
 // Mock Pickup Requests
 export const mockPickupRequests = [
@@ -159,7 +167,7 @@ export const mockPickupRequests = [
     status: 'pending',
     eta: 15,
     distance: 2.3,
-    createdAt: new Date(Date.now() - 10 * 60 * 1000),
+    createdAt: new Date(Date.now() - 10 * 60 * 1000)
   },
   {
     id: '2',
@@ -170,7 +178,7 @@ export const mockPickupRequests = [
     status: 'pending',
     eta: 20,
     distance: 3.1,
-    createdAt: new Date(Date.now() - 15 * 60 * 1000),
+    createdAt: new Date(Date.now() - 15 * 60 * 1000)
   },
   {
     id: '3',
@@ -182,7 +190,7 @@ export const mockPickupRequests = [
     eta: 8,
     distance: 1.5,
     createdAt: new Date(Date.now() - 25 * 60 * 1000),
-    acceptedAt: new Date(Date.now() - 20 * 60 * 1000),
+    acceptedAt: new Date(Date.now() - 20 * 60 * 1000)
   },
   {
     id: '4',
@@ -193,7 +201,7 @@ export const mockPickupRequests = [
     status: 'pending',
     eta: 25,
     distance: 4.2,
-    createdAt: new Date(Date.now() - 5 * 60 * 1000),
+    createdAt: new Date(Date.now() - 5 * 60 * 1000)
   },
   {
     id: '5',
@@ -204,42 +212,39 @@ export const mockPickupRequests = [
     status: 'pending',
     eta: 12,
     distance: 2.3,
-    createdAt: new Date(Date.now() - 8 * 60 * 1000),
-  },
+    createdAt: new Date(Date.now() - 8 * 60 * 1000)
+  }
 ];
 
-// Mock Donation History
-export const mockDonationHistory = [
-  {
-    id: '1',
-    foodPost: { ...mockFoodPosts[0], status: 'completed' },
-    seeker: mockSeekers[0],
-    quantityDonated: 30,
-    peopleHelped: 30,
-    completedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    rating: 5,
-    feedback: 'Excellent quality food, thank you!',
-  },
-  {
-    id: '2',
-    foodPost: { ...mockFoodPosts[1], status: 'completed' },
-    seeker: mockSeekers[1],
-    quantityDonated: 20,
-    peopleHelped: 20,
-    completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    rating: 4,
-  },
-  {
-    id: '3',
-    foodPost: { ...mockFoodPosts[2], status: 'completed' },
-    seeker: mockSeekers[2],
-    quantityDonated: 10,
-    peopleHelped: 10,
-    completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    rating: 5,
-    feedback: 'Very fresh and tasty!',
-  },
-];
+
+// Mock Donation History (30 items)
+export const mockDonationHistory = Array.from({ length: 30 }).map(
+  (_, i) => {
+    const food = mockFoodPosts[i % mockFoodPosts.length];
+    const seeker = mockSeekers[i % mockSeekers.length];
+
+    return {
+      id: String(i + 1),
+      foodPost: {
+        ...food,
+        title: `${food.title} #${i + 1}`,
+        status: 'completed'
+      },
+      seeker,
+      quantityDonated: 15 + (i % 5) * 10,
+      peopleHelped: 15 + (i % 5) * 10,
+      completedAt: new Date(
+        Date.now() - i * 24 * 60 * 60 * 1000
+      ),
+      rating: 4 + (i % 2),
+      feedback:
+        i % 3 === 0
+          ? 'Great quality food, thank you!'
+          : undefined
+    };
+  }
+);
+
 
 // Helper functions
 export const getTimeRemaining = (date) => {
