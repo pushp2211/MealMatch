@@ -3,11 +3,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  LayoutDashboard,
-  PlusCircle,
-  MapPin,
-  Inbox,
-  History,
   User,
   Settings,
   LogOut,
@@ -19,14 +14,6 @@ import { useState } from 'react';
 import { mockStats, mockProvider } from '@/data/mockData';
 import { sidebarMenu } from './SidebarMenu.config';
 import { useAuth } from '@/context/AuthContext';
-
-// const navItems = [
-//   { label: 'Dashboard', path: '/providerDashboard', icon: LayoutDashboard },
-//   { label: 'Post Food', path: '/providerDashboard/post-food', icon: PlusCircle },
-//   { label: 'Map View', path: '/providerDashboard/find-seeker', icon: MapPin },
-//   { label: 'Pickup Requests', path: '/providerDashboard/requests', icon: Inbox },
-//   { label: 'History', path: '/providerDashboard/history', icon: History },
-// ];
 
 const bottomNavItems = [
   { label: 'Profile', path: '/providerDashboard/profile', icon: User },
