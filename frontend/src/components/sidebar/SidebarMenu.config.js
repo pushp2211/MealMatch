@@ -7,7 +7,8 @@ import {
   
   Home,
   Truck,
-  Search
+  Search,
+  Activity
 } from "lucide-react";
 
 export const sidebarMenu = {
@@ -16,6 +17,7 @@ export const sidebarMenu = {
     { label: 'Post Food', path: '/providerDashboard/post-food', icon: PlusCircle },
     { label: 'Map View', path: '/providerDashboard/find-seeker', icon: MapPin },
     { label: 'Pickup Requests', path: '/providerDashboard/requests', icon: Inbox },
+    { label: 'Activity', path: '/providerDashboard/activity', icon: Activity },
     { label: 'History', path: '/providerDashboard/history', icon: History },
   ],
 

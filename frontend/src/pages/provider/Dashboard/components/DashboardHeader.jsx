@@ -16,7 +16,7 @@ const DashboardHeader = () => (
         Here's your impact today
       </p>
     </div>
-    <Link to="/post-food">
+    <Link to="/providerDashboard/post-food">
       <Button variant="destructive" className="gap-2">
         <Plus className="w-4 h-4" />
         Post Food

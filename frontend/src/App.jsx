@@ -26,6 +26,7 @@ import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
 import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
 import History from "./pages/provider/History/History";
+import ProviderActivity from "./pages/provider/Activity/ProviderActivity";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -43,6 +44,7 @@ const App = createBrowserRouter(
             <Route index element={<ProviderDashboard />} />
             <Route path="post-food" element={<PostFood />} />
             <Route path="find-seeker" element={<FindSeeker />} />
+            <Route path="activity" element={<ProviderActivity />} />
             <Route path="history" element={<History />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
