@@ -10,6 +10,7 @@ import LocationSection from '@/components/profile/LocationSection';
 import AboutSection from '@/components/profile/AboutSection';
 import RoleDetails from '@/components/profile/RoleDetails';
 import AccountInfo from '@/components/profile/AccountInfo';
+import { useAuth } from '@/context/AuthContext';
 
 const mockUser = {
   id: '1',
@@ -30,6 +31,8 @@ const mockUser = {
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(mockUser);
+  const {user} = useAuth();
+  mockUser.role = user.role;
 
   const handleSave = () => {
     toast.success('Profile updated successfully');

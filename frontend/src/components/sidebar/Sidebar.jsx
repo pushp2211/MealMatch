@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,19 +15,31 @@ import { mockStats, mockProvider } from '@/data/mockData';
 import { sidebarMenu } from './SidebarMenu.config';
 import { useAuth } from '@/context/AuthContext';
 
-const bottomNavItems = [
-  { label: 'Profile', path: '/providerDashboard/profile', icon: User },
-  { label: 'Settings', path: '/providerDashboard/settings', icon: Settings },
-];
 
 function Sidebar() {
-  const {user} = useAuth();
+  const {user, logout} = useAuth();
   const role = user.role;
   const navItems = sidebarMenu[role] || [];
   
+  const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
+  const baseDashboardPath = role === 'provider' ? '/providerDashboard' : '/seekerDashboard';
+
+  // Bottom nav items 
+  const bottomNavItems = [
+    {
+      label: 'Profile',
+      path: `${baseDashboardPath}/profile`,
+      icon: User,
+    },
+    {
+      label: 'Settings',
+      path: `${baseDashboardPath}/settings`,
+      icon: Settings,
+    },
+  ];
   return (
     <aside
       className={cn(
@@ -130,8 +142,11 @@ function Sidebar() {
 
         {/* Logout */}
         <button
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
-          onClick={() => console.log('Logout clicked')}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 cursor-pointer"
+          onClick={async() =>{
+            await logout();
+            navigate("/login", {replace: true});
+          }}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (

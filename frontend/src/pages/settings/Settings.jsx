@@ -5,8 +5,8 @@ import Notifications from '@/components/settings/Notifications';
 import OperationalPreferences from '@/components/settings/OperationalPreferences';
 import PrivacyVisibility from '@/components/settings/PrivacyVisibility';
 import DangerZone from '@/components/settings/DangerZone';
+import { useAuth } from '@/context/AuthContext';
 
-const mockUserRole = 'provider';
 
 const mockSessions = [
     { id: '1', device: 'Chrome on Windows', lastActive: new Date(), current: true },
@@ -22,6 +22,9 @@ const Settings = () => {
     const [phoneVisibility, setPhoneVisibility] = useState('after_match');
     const [profileVisibility, setProfileVisibility] = useState('everyone');
     const [deleteConfirm, setDeleteConfirm] = useState('');
+
+    const {user} = useAuth();
+    const mockUserRole = user.role;
 
     return (
         <>

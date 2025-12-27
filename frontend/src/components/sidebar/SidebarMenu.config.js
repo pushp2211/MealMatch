@@ -4,11 +4,10 @@ import {
   MapPin,
   Inbox,
   History,
-  
-  Home,
-  Truck,
   Search,
-  Activity
+  Activity,
+  Clock,
+  CheckCircle
 } from "lucide-react";
 
 export const sidebarMenu = {
@@ -22,25 +21,11 @@ export const sidebarMenu = {
   ],
 
   seeker: [
-    {
-      label: "Dashboard",
-      path: "/seeker/dashboard",
-      icon: Home,
-    },
-    {
-      label: "Find Food",
-      path: "/seeker/map",
-      icon: Search,
-    },
-    {
-      label: "Active Pickups",
-      path: "/seeker/pickups",
-      icon: Truck,
-    },
-    {
-      label: "History",
-      path: "/seeker/history",
-      icon: History,
-    },
+    { label: 'Dashboard', path: '/seekerDashboard', icon: LayoutDashboard },
+    { label: 'Find Food', path: '/seekerDashboard/find-food', icon: Search },
+    { label: 'My Requests', path: '/seekerDashboard/requests', icon: Clock },
+    { label: 'Active Pickups', path: '/seekerDashboard/active-pickups', icon: CheckCircle },
+    { label: 'Activity', path: '/seekerDashboard/activity', icon: Activity },
+    { label: 'History', path: '/seekerDashboard/history', icon: History },
   ],
 };

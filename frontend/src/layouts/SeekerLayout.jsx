@@ -1,9 +1,15 @@
-function SeekerLayout(){
+import Sidebar from "@/components/sidebar/Sidebar";
+import { Outlet } from "react-router-dom";
+
+function SeekerLayout() {
     return (
-        <>
-            <h1>Login Success I am Dummy Dashboard for testing purpose</h1>
-        </>
+        <div className='h-[100vh] w-full'>
+            <div className="h-[calc(100vh)] flex bg-pink1">
+                <Sidebar/>
+                <Outlet />
+            </div>
+        </div>
     )
 }
 
-export default SeekerLayout
+export default SeekerLayout;

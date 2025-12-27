@@ -18,7 +18,7 @@ const RedirectHandler = ({ children }) => {
           navigate("/providerDashboard", { replace: true });
         } 
         else if(user.role === "seeker"){
-          navigate("/DummyDashboard", { replace: true });
+          navigate("/seekerDashboard", { replace: true });
         }
       }
     }

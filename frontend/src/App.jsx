@@ -28,6 +28,7 @@ import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
 import History from "./pages/provider/History/History";
 import ProviderActivity from "./pages/provider/Activity/ProviderActivity";
 import ProviderRequests from "./pages/provider/Requests/ProviderRequests";
+import SeekerRequests from "./pages/seeker/Requests/SeekerRequests";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -55,7 +56,10 @@ const App = createBrowserRouter(
         
         {/* Protected Seeker only routes */}
         <Route element={<ProtectedRoute allowedRole="seeker"/>}> 
-          <Route path="/DummyDashboard" element={<SeekerLayout />}>
+          <Route path="/seekerDashboard" element={<SeekerLayout />}>
+            <Route path="requests" element={<SeekerRequests />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
 

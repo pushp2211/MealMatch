@@ -61,7 +61,7 @@ function Login() {
       if (res.data.user.role === "provider") {
         navigate("/providerDashboard", { replace: true });
       } else {
-        navigate("/DummyDashboard", { replace: true });
+        navigate("/seekerDashboard", { replace: true });
       }
     } catch (err) {
       console.error("Login error:", err);

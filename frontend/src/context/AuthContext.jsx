@@ -78,8 +78,39 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+
+  // Adding logout and logout all logics here itself so that they can be passed to multiple files easily
+  // Logout (current session logout only)
+  const logout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      // Clear user in all tabs
+      setUserWithSync(null);
+    }
+  };
+
+  // logout all (out of all devices)
+  const logoutAll = async () => {
+    try {
+      await api.post("/api/auth/logout-all");
+    } catch (err) {
+      console.error("Logout all error:", err);
+    } finally {
+      // Clear user in all tabs
+      setUserWithSync(null);
+    }
+  };
   return (
-    <AuthContext.Provider value={{ user, loading, setUser: setUserWithSync }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      setUser: setUserWithSync,
+      logout,
+      logoutAll,
+    }}>
       {children}
     </AuthContext.Provider>
   );
