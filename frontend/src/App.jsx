@@ -27,6 +27,7 @@ import ProviderRequests from "./pages/provider/Requests/ProviderRequests";
 
 // Seeker pages
 import SeekerRequests from "./pages/seeker/Requests/SeekerRequests";
+import SeekerActivePickups from "./pages/seeker/Active Pickups/SeekerActivePickups";
 
 // shared
 import Activity from "./pages/activity/Activity/Activity";
@@ -62,6 +63,7 @@ const App = createBrowserRouter(
         <Route element={<ProtectedRoute allowedRole="seeker"/>}> 
           <Route path="/seekerDashboard" element={<SeekerLayout />}>
             <Route path="requests" element={<SeekerRequests />} />
+            <Route path="active-pickups" element={<SeekerActivePickups />} />
             <Route path="activity" element={<Activity />} />
             <Route path="history" element={<History />} />
             <Route path="profile" element={<Profile />} />
