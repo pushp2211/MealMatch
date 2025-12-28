@@ -20,15 +20,19 @@ import SeekerLayout from "./layouts/SeekerLayout";
 import ProviderLayout from "./layouts/ProviderLayout";
 
 // Provider pages
+import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
 import PostFood from "./pages/provider/PostFood/PostFood";
 import FindSeeker from "./pages/provider/FindSeeker/FindSeeker";
+import ProviderRequests from "./pages/provider/Requests/ProviderRequests";
+
+// Seeker pages
+import SeekerRequests from "./pages/seeker/Requests/SeekerRequests";
+
+// shared
+import Activity from "./pages/activity/Activity/Activity";
+import History from "./pages/history/History";
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
-import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
-import History from "./pages/provider/History/History";
-import ProviderActivity from "./pages/provider/Activity/ProviderActivity";
-import ProviderRequests from "./pages/provider/Requests/ProviderRequests";
-import SeekerRequests from "./pages/seeker/Requests/SeekerRequests";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -47,7 +51,7 @@ const App = createBrowserRouter(
             <Route path="post-food" element={<PostFood />} />
             <Route path="find-seeker" element={<FindSeeker />} />
             <Route path="requests" element={<ProviderRequests />} />
-            <Route path="activity" element={<ProviderActivity />} />
+            <Route path="activity" element={<Activity />} />
             <Route path="history" element={<History />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
@@ -58,6 +62,8 @@ const App = createBrowserRouter(
         <Route element={<ProtectedRoute allowedRole="seeker"/>}> 
           <Route path="/seekerDashboard" element={<SeekerLayout />}>
             <Route path="requests" element={<SeekerRequests />} />
+            <Route path="activity" element={<Activity />} />
+            <Route path="history" element={<History />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>

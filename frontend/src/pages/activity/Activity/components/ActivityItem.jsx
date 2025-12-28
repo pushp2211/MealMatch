@@ -2,10 +2,13 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { formatTimeAgo } from '@/data/mockData';
 import { getActivityIcon, getActivityBadge } from '../utils/activityIcons';
+import { useAuth } from '@/context/AuthContext';
 
 const ActivityItem = ({ activity, groupIndex, index }) => {
-  const iconInfo = getActivityIcon(activity.type);
-  const badgeInfo = getActivityBadge(activity.type);
+  const { user } = useAuth();
+  const iconInfo = getActivityIcon(activity.type, user.role);
+  const badgeInfo = getActivityBadge(activity.type, user.role);
+
   const IconComponent = iconInfo.icon;
 
   return (

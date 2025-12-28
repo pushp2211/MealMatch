@@ -1,5 +1,3 @@
-// import { AvailableFood, FoodProvider, SeekerRequest, SeekerActivityItem, SeekerPickupHistory, SeekerProfile, SeekerDashboardStats } from '@/types/seeker';
-
 // Mock Seeker Profile
 export const mockSeekerProfile = {
   id: 'seeker-1',

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-const ActivityHeader = () => (
+const ActivityHeader = ({ role }) => (
   <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -10,7 +10,9 @@ const ActivityHeader = () => (
       Activity Feed
     </h1>
     <p className="text-sm sm:text-base text-muted-foreground mt-1">
-      Track all your activities in real time
+      {role === 'seeker'
+        ? 'Track all your food requests and activities in real time'
+        : 'Track all your activities in real time'}
     </p>
   </motion.div>
 );
