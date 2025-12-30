@@ -13,7 +13,7 @@ import PickupLocation from './PickupLocation';
 import PickupActions from './PickupActions';
 import PickupNote from './PickupNote';
 
-const ActivePickupCard = ({ pickup, index }) => {
+const ActivePickupCard = ({ pickup, index, onNavigate }) => {
   const status = getPickupStatus(pickup.acceptedAt);
 
   return (
@@ -67,8 +67,10 @@ const ActivePickupCard = ({ pickup, index }) => {
 
         <CardContent className="space-y-4">
           <PickupDetailsGrid pickup={pickup} />
-          <PickupLocation pickup={pickup} />
-          <PickupActions pickup={pickup} />
+          <PickupLocation
+            pickup={pickup}
+            onNavigate={onNavigate} />
+          <PickupActions pickup={pickup}/>
           <PickupNote note={pickup.note} />
         </CardContent>
       </Card>

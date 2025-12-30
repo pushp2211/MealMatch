@@ -1,315 +1,344 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Search,
-  MapPin,
-  Navigation,
-  Leaf,
-  Drumstick,
-  Timer,
-  Utensils,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import { motion } from "framer-motion"
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Search, Navigation } from "lucide-react";
 
-import {
-  mockAvailableFood,
-  getSeekerTimeRemaining,
-} from '@/data/seekerMockData';
+import MapView from "@/components/maps/MapView";
+import MarkerLayer from "@/components/maps/layers/MarkerLayer";
+import UserLocationMarker from "@/components/maps/layers/UserLocationMarker";
+import RadiusLayer from "@/components/maps/layers/RadiusLayer";
+import RouteLayer from "@/components/maps/layers/RouteLayer";
+import MapControls from "@/components/maps/controls/MapControls";
 
-import BaseMap from '@/components/maps/BaseMap';
-import MarkerLayer from '@/components/maps/MarkerLayer';
-import Controls from '@/components/maps/Controls';
-import useUserLocation from '@/components/maps/hooks/useUserLocation';
-import { MAP_STYLES } from '@/components/maps/mapStyles';
+import useUserLocation from "@/components/maps/hooks/useUserLocation";
+import useFindFoodMap from "./useFindFoodMap";
 
-const DEFAULT_CENTER = {
-  lat: 12.9716,
-  lng: 77.5946, 
-};
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+
+import FoodList from "./components/FoodList";
+import FoodCard from "./components/FoodCard";
+
+import { mockAvailableFood } from "@/data/seekerMockData";
+
+const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 };
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+const STYLE_STREETS = "mapbox://styles/mapbox/streets-v12";
+const STYLE_SATELLITE = "mapbox://styles/mapbox/satellite-streets-v12";
+
+const formatDistance = (m) => `${(m / 1000).toFixed(1)} km`;
+const formatDuration = (s) => `${Math.round(s / 60)} min`;
 
 const SeekerFindFood = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const { state } = useLocation();
+  // Navigation mode detection
+  const isNavigation = state?.mode === "navigation";
+  const pickup = state?.pickup;
+
+  const destinationLocation =
+    pickup?.food?.location ||
+    pickup?.food?.provider?.location ||
+    null;
+
+  const { getCurrentLocation, loading: gpsLoading } = useUserLocation();
+
+  const [sessionLocation, setSessionLocation] = useState(DEFAULT_CENTER);
   const [radius, setRadius] = useState(5);
   const [selectedFood, setSelectedFood] = useState(null);
-  const [requestQuantity, setRequestQuantity] = useState(10);
-  const [requestNote, setRequestNote] = useState('');
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [mapStyle, setMapStyle] = useState(MAP_STYLES.streets);
 
-  /* 📍 User location */
-  const { location, getCurrentLocation } = useUserLocation();
-  const mapCenter = location || DEFAULT_CENTER;
+  const [mapStyle, setMapStyle] = useState(STYLE_STREETS);
 
-  /* 🆕 REF: Create a reference for the map container */
-  const mapContainerRef = useRef(null);
+  // Search state
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  /* 🆕 EFFECT: Watch for container resize and force Map update */
+  // Route info (only for navigation mode)
+  const [routeInfo, setRouteInfo] = useState(null);
+
+  // Filter + markers
+  const markers = useFindFoodMap(
+    mockAvailableFood,
+    sessionLocation,
+    radius
+  );
+
+  // Robust Auto-Resize for Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
-    const resizeObserver = new ResizeObserver(() => {
-      window.dispatchEvent(new Event('resize'));
+
+    const performResize = () => {
+      if (mapRef.current) {
+        const map = mapRef.current.getMap();
+        if (map) {
+          // Invalidating size forces Mapbox to check its container dimensions again
+          map.resize();
+        }
+      }
+    };
+
+    const observer = new ResizeObserver(() => {
+      // 1. Resize immediately when change detected
+      performResize();
+      // 2. Resize AGAIN after 300ms to catch the end of the sidebar animation
+      setTimeout(performResize, 310);
     });
-    resizeObserver.observe(mapContainerRef.current);
-    return () => resizeObserver.disconnect();
+    observer.observe(mapContainerRef.current);
+    // Also listen to window resize as a backup
+    window.addEventListener("resize", performResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", performResize);
+    };
   }, []);
 
-  /* 🔍 Filter food */
-  const filteredFood = useMemo(() => {
-    return mockAvailableFood.filter((food) => {
-      const matchesSearch =
-        food.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        food.provider.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRadius = food.provider.distance <= radius;
-      return matchesSearch && matchesRadius;
+  /* Fly map when user location changes */
+  useEffect(() => {
+    if (!mapRef.current || !sessionLocation) return;
+    if (isNavigation) return;
+
+    mapRef.current.flyTo({
+      center: [sessionLocation.lng, sessionLocation.lat],
+      zoom: 13,
+      speed: 1.2,
     });
-  }, [searchQuery, radius]);
+  }, [sessionLocation, isNavigation]);
 
-  /* 🎯 Handlers */
-  const handleGetLocation = () => {
-    getCurrentLocation();
-    toast.success('Location updated');
-  };
+  /* Fly to food when selected (browse mode only) */
+  useEffect(() => {
+    if (isNavigation) return;
+    if (!selectedFood || !mapRef.current) return;
 
-  const handleFoodClick = (food) => {
-    setSelectedFood(food);
-    setRequestQuantity(Math.min(10, food.quantity));
-  };
-
-  const handleSubmitRequest = () => {
-    setShowConfirmDialog(false);
-    setSelectedFood(null);
-    setRequestNote('');
-
-    toast.success('Request sent successfully!', {
-      description: `Your request for ${requestQuantity} ${selectedFood?.quantityUnit} has been sent to ${selectedFood?.provider.name}`,
+    mapRef.current.flyTo({
+      center: [
+        selectedFood.provider.location.lng,
+        selectedFood.provider.location.lat,
+      ],
+      zoom: 14,
+      speed: 1.2,
     });
-  };
+  }, [selectedFood, isNavigation]);
 
-  /* 🍽️ UI helpers */
-  const getFoodTypeIcon = (type) => {
-    switch (type) {
-      case 'veg':
-        return <Leaf className="w-4 h-4 text-success" />;
-      case 'non-veg':
-        return <Drumstick className="w-4 h-4 text-destructive" />;
-      default:
-        return <Utensils className="w-4 h-4 text-warning" />;
+  /* Handle Recenter Click */
+  const handleRecenter = () => {
+    if (!mapRef.current) return;
+
+    // Mode 1: Navigation - Fit Route
+    if (isNavigation && routeInfo?.bounds) {
+      mapRef.current.getMap().fitBounds(routeInfo.bounds, {
+        padding: 50,
+        duration: 1500,
+        essential: true,
+      });
+      return;
+    }
+
+    // Mode 2: Browse - Fly to User Location
+    if (sessionLocation) {
+      mapRef.current.flyTo({
+        center: [sessionLocation.lng, sessionLocation.lat],
+        zoom: 14,
+        speed: 1.2
+      });
     }
   };
 
+  const toggleMapStyle = () => {
+    setMapStyle(prev => prev === STYLE_STREETS ? STYLE_SATELLITE : STYLE_STREETS);
+  };
+
+  // Autocomplete (debounced)
+  useEffect(() => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?autocomplete=true&country=IN&access_token=${MAPBOX_TOKEN}`
+      );
+      const data = await res.json();
+      setSuggestions(data.features || []);
+      setShowSuggestions(true);
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
+
   return (
-    <div className="flex bg-amber-300 flex-col w-full h-full">
-      {/* 🔝 Top Controls */}
+    <div className="flex flex-col h-full w-full">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 border-b bg-card shrink-0" // added shrink-0 to prevent compression
+        className="border-b bg-card shrink-0" // added shrink-0 to prevent compression
       >
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex flex-1 gap-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search area or food..."
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        {/* ================= TOP BAR (HIDDEN IN NAVIGATION MODE) ================= */}
+        {!isNavigation && (
+          <div className="flex flex-col lg:flex-row gap-4 p-4 ">
+            <div className="flex flex-1 gap-2">
+              {/* SEARCH */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search area or food..."
+                  className="pl-9"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                />
+
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 mt-1 w-full bg-card border rounded-md shadow">
+                    {suggestions.map((s) => (
+                      <div
+                        key={s.id}
+                        className="px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+                        onClick={() => {
+                          const [lng, lat] = s.center;
+                          setSessionLocation({ lat, lng });
+                          setQuery(s.place_name);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {s.place_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* GPS */}
+              <Button
+                variant="outline"
+                disabled={gpsLoading}
+                onClick={() =>
+                  getCurrentLocation((loc) => {
+                    setSessionLocation(loc);
+                  })
+                }
+              >
+                <Navigation className="w-4 h-4 mr-2" />
+                {gpsLoading ? "Locating..." : "Get Location"}
+              </Button>
             </div>
 
-            <Button
-              variant={location ? 'default' : 'outline'}
-              onClick={handleGetLocation}
-            >
-              <Navigation className="w-4 h-4 mr-2" />
-              {location ? 'GPS Active' : 'Get Location'}
-            </Button>
+            {/* RADIUS */}
+            <div className="flex items-center gap-4 min-w-[280px]">
+              <span className="text-sm text-muted-foreground">Radius</span>
+              <Slider
+                min={1}
+                max={50}
+                step={1}
+                value={[radius]}
+                onValueChange={(v) => setRadius(v[0])}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium text-info w-12">
+                {radius} km
+              </span>
+              <Badge variant="info">{markers.length} posts</Badge>
+            </div>
           </div>
-
-          <div className="flex items-center gap-4 min-w-[280px]">
-            <span className="text-sm text-muted-foreground">Radius:</span>
-            <Slider
-              value={[radius]}
-              onValueChange={(v) => setRadius(v[0])}
-              min={1}
-              max={15}
-              step={1}
-              className="flex-1"
-            />
-            <span className="text-sm font-medium text-info w-12">
-              {radius} km
-            </span>
-            <Badge variant="info">{filteredFood.length} posts</Badge>
-          </div>
-        </div>
+        )}
       </motion.div>
 
-      {/* 🧭 Main Content */}
+      {/* ================= MAIN CONTENT ================= */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        
-        {/* 🗺️ Map Section */}
-        {/* FIX APPLIED HERE:
-            1. h-[350px]: Fixed height on mobile so it doesn't take full screen.
-            2. flex-none: Prevents map from growing on mobile.
-            3. lg:flex-1 / lg:h-auto: Resets to full fluid width/height on desktop.
-        */}
-        <div 
+        {/* MAP CONTAINER */}
+        <div
           ref={mapContainerRef}
-          className="h-[350px] lg:h-auto flex-none lg:flex-1 relative z-0"
+          className="flex-none lg:flex-1 min-h-[60vh] lg:min-h-0 relative transition-all duration-300 ease-in-out"
         >
-          <BaseMap center={mapCenter} mapStyle={mapStyle}>
-            <MarkerLayer
-              items={filteredFood}
-              onMarkerClick={handleFoodClick}
+          <MapView center={sessionLocation} mapRef={mapRef} mapStyle={mapStyle}>
+            {/* User current location */}
+            <UserLocationMarker location={sessionLocation} />
+
+            {/* MODULAR CONTROLS COMPONENT */}
+            <MapControls 
+              onRecenter={handleRecenter} 
+              onToggleStyle={toggleMapStyle} 
+              isNavigation={isNavigation} 
             />
-          </BaseMap>
 
-          <Controls
-            onZoomIn={() => {}}
-            onZoomOut={() => {}}
-            onToggleStyle={() =>
-              setMapStyle((prev) =>
-                prev === MAP_STYLES.streets
-                  ? MAP_STYLES.satellite
-                  : MAP_STYLES.streets
-              )
-            }
+            {/* Browse mode layers */}
+            {!isNavigation && (
+              <>
+                <RadiusLayer
+                  mapRef={mapRef}
+                  center={sessionLocation}
+                  radiusKm={radius}
+                />
+
+                <MarkerLayer
+                  items={markers}
+                  selectedId={selectedFood?.id}
+                  onSelect={(m) => setSelectedFood(m.data)}
+                />
+              </>
+            )}
+
+            {/* Navigation mode layers */}
+            {isNavigation && pickup && (
+              <>
+                <MarkerLayer
+                  items={[{
+                    id: 'dest',
+                    lat: destinationLocation.lat,
+                    lng: destinationLocation.lng
+                  }]}
+                  selectedId='dest'
+                  onSelect={() => { }}
+                />
+
+                <RouteLayer
+                  mapRef={mapRef}
+                  from={sessionLocation}
+                  to={destinationLocation}
+                  onRouteData={setRouteInfo}
+                />
+              </>
+            )}
+          </MapView>
+        </div>
+
+        {/* FOOD LIST (BROWSE MODE ONLY) */}
+        {!isNavigation && (
+          <FoodList
+            foods={markers.map((m) => m.data)}
+            selectedId={selectedFood?.id}
+            onSelect={setSelectedFood}
           />
-
-          {location && (
-            <div className="absolute bottom-4 left-4 z-10">
-              <Badge variant="info">
-                <Navigation className="w-3 h-3 mr-1" />
-                GPS Active
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* 📋 Food List */}
-        {/* FIX APPLIED HERE:
-            1. flex-1: On mobile, takes remaining height after map.
-            2. overflow-y-auto: Allows scrolling ONLY inside this div.
-            3. lg:flex-none / lg:w-80: Resets to fixed sidebar on desktop.
-        */}
-        <div className="flex-1 lg:flex-none w-full lg:w-80 xl:w-96 border-t lg:border-t-0 lg:border-l bg-card overflow-y-auto z-10">
-          <div className="p-4 space-y-3">
-            <h3 className="font-semibold">Nearby Food</h3>
-
-            {filteredFood.map((food) => (
-              <motion.div
-                key={food.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.02 }}
-                className="cursor-pointer"
-                onClick={() => handleFoodClick(food)}
-              >
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex gap-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
-                        {getFoodTypeIcon(food.foodType)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">
-                          {food.title}
-                        </h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {food.provider.name}
-                        </p>
-                        <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {food.provider.distance} km
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Timer className="w-3 h-3" />
-                            {getSeekerTimeRemaining(food.bestBefore)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* 🪟 Modals */}
-      <AnimatePresence>
-        {selectedFood && !showConfirmDialog && (
-          <Dialog
-            open={!!selectedFood}
-            onOpenChange={() => setSelectedFood(null)}
-          >
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {getFoodTypeIcon(selectedFood.foodType)}
-                  {selectedFood.title}
-                </DialogTitle>
-                <DialogDescription>
-                  from {selectedFood.provider.name}
-                </DialogDescription>
-              </DialogHeader>
+      {/* ================= ETA CARD (NAVIGATION MODE) ================= */}
+      {isNavigation && routeInfo && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-card shadow-xl border rounded-full px-6 py-3 flex items-center gap-6 z-20">
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Distance</span>
+            <span className="font-bold text-lg">{formatDistance(routeInfo.distance)}</span>
+          </div>
+          <div className="w-px h-8 bg-border"></div>
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Time</span>
+            <span className="font-bold text-lg text-blue-600">{formatDuration(routeInfo.duration)}</span>
+          </div>
+        </div>
+      )}
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedFood(null)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={() => setShowConfirmDialog(true)}>
-                  Request Food
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-      </AnimatePresence>
-
-      <Dialog
-        open={showConfirmDialog}
-        onOpenChange={setShowConfirmDialog}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Request</DialogTitle>
-            <DialogDescription>
-              Please review your request before submitting
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowConfirmDialog(false)}
-            >
-              Back
-            </Button>
-            <Button onClick={handleSubmitRequest}>
-              Confirm Request
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ================= FOOD CARD ================= */}
+      <FoodCard
+        food={selectedFood}
+        onClose={() => setSelectedFood(null)}
+        onRequest={() => setSelectedFood(null)}
+      />
     </div>
   );
 };

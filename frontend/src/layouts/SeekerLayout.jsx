@@ -2,14 +2,15 @@ import Sidebar from "@/components/sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 
 function SeekerLayout() {
-    return (
-        <div className='h-[100vh] w-full bg-amber-300'>
-            <div className="h-[calc(100vh)] flex bg-pink1">
-                <Sidebar/>
-                <Outlet />
-            </div>
-        </div>
-    )
+  return (
+    <div className="h-[100vh] w-full flex bg-pink1 overflow-hidden">
+      <Sidebar />
+
+      <div className="flex-1 min-w-0 h-full">
+        <Outlet />
+      </div>
+    </div>
+  );
 }
 
 export default SeekerLayout;

@@ -6,8 +6,20 @@ import { CheckCircle } from 'lucide-react';
 import ActivePickupCard from './components/ActivePickupCard';
 import { useSeekerActivePickups } from './hooks/useSeekerActivePickups';
 
+import { useNavigate } from "react-router-dom";
+
 const SeekerActivePickups = () => {
   const { activePickups } = useSeekerActivePickups();
+
+  const navigate = useNavigate();
+  const handleNavigate = (pickup) => {
+    navigate("/seekerDashboard/find-food", {
+      state: {
+        mode: "navigation",
+        pickup,
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen w-full overflow-y-auto space-y-6 py-6 px-4 lg:px-[10%]">
@@ -24,11 +36,11 @@ const SeekerActivePickups = () => {
 
       {activePickups.length > 0 ? (
         <div className="space-y-4">
-          {activePickups.map((pickup, index) => (
+          {activePickups.map((pickup) => (
             <ActivePickupCard
               key={pickup.id}
               pickup={pickup}
-              index={index}
+              onNavigate={() => handleNavigate(pickup)}
             />
           ))}
         </div>

@@ -1,33 +1,29 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const useUserLocation = () => {
-  const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation not supported');
-      return;
-    }
+  const getCurrentLocation = (onSuccess) => {
+    if (!navigator.geolocation) return;
 
     setLoading(true);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocation({
+        setLoading(false);
+        onSuccess({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
-        setLoading(false);
       },
       () => {
         setLoading(false);
-        alert('Location permission denied');
+        alert("Unable to fetch location");
       }
     );
   };
 
-  return { location, getCurrentLocation, loading };
+  return { getCurrentLocation, loading };
 };
 
 export default useUserLocation;
