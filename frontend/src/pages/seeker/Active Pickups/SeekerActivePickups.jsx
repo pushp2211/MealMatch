@@ -22,7 +22,7 @@ const SeekerActivePickups = () => {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto space-y-6 py-6 px-4 lg:px-[10%]">
+    <div className="h-full w-full overflow-y-auto space-y-6 py-6 px-4 lg:px-[10%]">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

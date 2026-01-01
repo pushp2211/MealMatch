@@ -3,7 +3,7 @@ import Sidebar from "../components/sidebar/Sidebar";
 
 function ProviderLayout() {
   return (
-    <div className="h-[screen] w-full">
+    <div className="h-screen w-full">
       <div className="flex h-full bg-pink1">
         <Sidebar />
         {/* MAIN CONTENT */}

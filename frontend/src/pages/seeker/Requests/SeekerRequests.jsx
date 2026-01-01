@@ -20,7 +20,7 @@ const SeekerRequests = () => {
   };
 
   return (
-    <div className="bg-amber-200 min-h-screen w-full overflow-y-auto py-6 sm:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-[10%]">
+    <div className="bg-amber-200 h-full w-full overflow-y-auto py-6 sm:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-[10%]">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
