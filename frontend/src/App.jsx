@@ -22,11 +22,12 @@ import ProviderLayout from "./layouts/ProviderLayout";
 // Provider pages
 import ProviderDashboard from "./pages/provider/Dashboard/ProviderDashboard";
 import PostFood from "./pages/provider/PostFood/PostFood";
-// import FindSeeker from "./pages/provider/FindSeeker/FindSeeker";
+import ProviderMapView from "./pages/provider/FindSeeker/ProviderMapView";
 import ProviderRequests from "./pages/provider/Requests/ProviderRequests";
 
 // Seeker pages
 import SeekerDashboard from "./pages/seeker/Dashboard/SeekerDashboard";
+import SeekerFindFood from "./pages/seeker/FindFood/SeekerFindFood";
 import SeekerRequests from "./pages/seeker/Requests/SeekerRequests";
 import SeekerActivePickups from "./pages/seeker/Active Pickups/SeekerActivePickups";
 
@@ -35,7 +36,6 @@ import Activity from "./pages/activity/Activity/Activity";
 import History from "./pages/history/History";
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
-import SeekerFindFood from "./pages/seeker/FindFood/SeekerFindFood";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
@@ -52,7 +52,7 @@ const App = createBrowserRouter(
           <Route path="/providerDashboard" element={<ProviderLayout/>}>
             <Route index element={<ProviderDashboard />} />
             <Route path="post-food" element={<PostFood />} />
-            {/* <Route path="find-seeker" element={<FindSeeker />} /> */}
+            <Route path="find-seeker" element={<ProviderMapView />} />
             <Route path="requests" element={<ProviderRequests />} />
             <Route path="activity" element={<Activity />} />
             <Route path="history" element={<History />} />
