@@ -1,29 +1,35 @@
 import { Marker } from "react-map-gl/mapbox";
-import { MapPin } from "lucide-react";
+import PinMarker from "@/components/maps/markers/PinMarker";
+import { getPinConfig } from "../utils/getPinConfig";
 
 const MarkerLayer = ({ items = [], selectedId, onSelect }) => {
   return (
     <>
-      {items.map((item) => (
-        <Marker
-          key={item.id}
-          longitude={item.lng}
-          latitude={item.lat}
-          anchor="bottom"
-          onClick={(e) => {
-            e.originalEvent.stopPropagation();
-            onSelect(item);
-          }}
-        >
-          <MapPin
-            className={`w-7 h-7 cursor-pointer transition-transform ${
-              selectedId === item.id
-                ? "text-red-500 scale-110"
-                : "text-info"
-            }`}
-          />
-        </Marker>
-      ))}
+      {items.map((item) => {
+        const isSelected = selectedId === item.id;
+        const { color, size, zIndex } = getPinConfig(item, isSelected);
+
+        return (
+          <Marker
+            key={item.id}
+            longitude={item.lng}
+            latitude={item.lat}
+            anchor="bottom"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSelect(item);
+            }}
+          >
+            <div style={{ zIndex }}>
+              <PinMarker
+                color={color}
+                size={size}
+                active={isSelected}
+              />
+            </div>
+          </Marker>
+        );
+      })}
     </>
   );
 };

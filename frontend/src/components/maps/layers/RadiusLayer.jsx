@@ -75,7 +75,7 @@ const RadiusLayer = ({ mapRef, center, radiusKm }) => {
       });
     };
 
-    // ✅ CRITICAL FIX
+    // CRITICAL FIX
     if (map.isStyleLoaded()) {
       addOrUpdate();
     } else {

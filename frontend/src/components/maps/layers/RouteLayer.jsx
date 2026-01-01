@@ -1,12 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useRef ,useEffect } from "react";
 import { Source, Layer } from "react-map-gl/mapbox";
 import mapboxgl from "mapbox-gl";
 
+const MIN_ROUTE_INTERVAL = 4000; // ms → max 1 route request per 4s
+const MIN_MOVE_DISTANCE = 0.015; // km → ~15 meters
+
 const RouteLayer = ({ mapRef, from, to, onRouteData }) => {
   const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+  // Throttle refs (do NOT cause re-renders)
+  const lastRouteTimeRef = useRef(0);
+  const lastFromRef = useRef(null);
 
   useEffect(() => {
     if (!from || !to) return;
+
+    const now = Date.now();
+    // Time-based throttle
+    if (now - lastRouteTimeRef.current < MIN_ROUTE_INTERVAL) {
+      return;
+    }
+
+    // Distance-based throttle
+    if (lastFromRef.current) {
+      const prev = lastFromRef.current;
+
+      const distanceMoved = mapboxgl.LngLat
+        .convert([prev.lng, prev.lat])
+        .distanceTo(mapboxgl.LngLat.convert([from.lng, from.lat]));
+
+      // distanceTo returns meters
+      if (distanceMoved < MIN_MOVE_DISTANCE * 1000) {
+        return;
+      }
+    }
+
+    lastRouteTimeRef.current = now;
+    lastFromRef.current = from;
 
     const fetchRoute = async () => {
       try {
@@ -66,7 +95,7 @@ const RouteLayer = ({ mapRef, from, to, onRouteData }) => {
         layout={{ "line-join": "round", "line-cap": "round" }}
         paint={{
           "line-color": "#155e75",
-          "line-width": 10,
+          "line-width": 8,
           "line-opacity": 0.8
         }}
         beforeId="waterway-label"

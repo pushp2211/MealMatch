@@ -23,6 +23,9 @@ const useFindFoodMap = (foods, center, radiusKm) => {
       lat: food.provider.location.lat,
       lng: food.provider.location.lng,
       data: food,
+      // marker metadata
+      type: "provider",
+      status: food.provider.verified ? "verified" : "normal",
     }));
 };
 

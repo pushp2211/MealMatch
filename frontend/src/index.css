@@ -24,6 +24,8 @@
     --color-dashbg1: #F5DDD9;
     --color-dashcard1: #ecbeb6;
 
+    /* blue color for primary location on map */
+    --color-primary-user: #2563eb;
     /* -----------------------------CUSTOM ANIMATION ----------------------------------*/
     --animate-slideup: slideUp 1s ease-out;
 
