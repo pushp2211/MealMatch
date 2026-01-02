@@ -85,7 +85,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    
+
     location: {
       type: {
         type: String,
@@ -102,6 +102,37 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     sessions: [sessionSchema],
+
+    // for settings preferences related 
+    settings: {
+      notifications: {
+        email: { type: Boolean, default: false },
+        push: { type: Boolean, default: true },
+      },
+
+      privacy: {
+        phoneVisibility: {
+          type: String,
+          enum: ["after_match", "always", "never"],
+          default: "after_match",
+        },
+        profileVisibility: {
+          type: String,
+          enum: ["everyone", "verified_only"],
+          default: "everyone",
+        },
+      },
+
+      providerPreferences: {
+        pickupRadiusKm: { type: Number, default: 10 },
+        autoAcceptRequests: { type: Boolean, default: false },
+        autoExpireFoodPosts: { type: Boolean, default: true },
+      },
+
+      seekerPreferences: {
+        searchRadiusKm: { type: Number, default: 10 },
+      },
+    },
   },
   {
     timestamps: true,

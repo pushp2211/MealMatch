@@ -51,20 +51,33 @@ const AvailabilityStep = ({ formData, setFormData }) => {
                 <div className="flex gap-3">
                     <button
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, price: 0 }))}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${formData.price === 0
-                            ? 'border-success bg-success/5'
-                            : 'border-border hover:border-success/30'
+                        onClick={() =>
+                            setFormData(prev => ({
+                                ...prev,
+                                pricingType: 'free',
+                                price: 0,
+                            }))
+                        }
+                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${formData.pricingType === 'free'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/30'
                             }`}
                     >
-                        <Sparkles className="w-6 h-6 mx-auto mb-2 text-success" />
+                        <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary" />
                         <span className="text-sm font-medium block">Free</span>
                         <span className="text-xs text-muted-foreground">Donate for free</span>
                     </button>
+
                     <button
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, price: 10 }))}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${formData.price > 0
+                        onClick={() =>
+                            setFormData(prev => ({
+                                ...prev,
+                                pricingType: 'minimal',
+                                price: prev.price || 10,
+                            }))
+                        }
+                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${formData.pricingType === 'minimal'
                             ? 'border-primary bg-primary/5'
                             : 'border-border hover:border-primary/30'
                             }`}
@@ -74,7 +87,8 @@ const AvailabilityStep = ({ formData, setFormData }) => {
                         <span className="text-xs text-muted-foreground">Cover basic costs</span>
                     </button>
                 </div>
-                {formData.price > 0 && (
+
+                {formData.pricingType === 'minimal' && (
                     <div className="space-y-2">
                         <Label htmlFor="price">Price (₹)</Label>
                         <Input
@@ -82,11 +96,17 @@ const AvailabilityStep = ({ formData, setFormData }) => {
                             type="number"
                             min={1}
                             value={formData.price}
-                            onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                            onChange={(e) =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    price: parseInt(e.target.value) || 0,
+                                }))
+                            }
                         />
                     </div>
                 )}
             </div>
+
         </>
     );
 };

@@ -1,103 +1,185 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Camera, Check } from 'lucide-react';
-import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
+import { MapPin, Camera, Check, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-const LocationStep = ({ formData, setFormData }) => {
-    const handleGetLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setFormData(prev => ({ ...prev, useCurrentLocation: true }));
-                    toast.success('Location captured successfully!');
-                },
-                () => {
-                    toast.error('Unable to get location. Please enter manually.');
-                }
-            );
-        }
-    };
+import useUserLocation from '@/components/maps/hooks/useUserLocation';
 
-    return (
-        <>
-            <div className="space-y-4">
-                <Label>
-                    <MapPin className="w-4 h-4 inline mr-2" />
-                    Pickup Location
-                </Label>
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-                <div className="grid grid-cols-2 gap-3">
-                    <Button
-                        type="button"
-                        variant={formData.useCurrentLocation ? 'default' : 'outline'}
-                        className="h-auto py-4"
-                        onClick={handleGetLocation}
-                    >
-                        <MapPin className="w-5 h-5 mr-2" />
-                        <div className="text-left">
-                            <span className="block font-medium">Use GPS</span>
-                            <span className="text-xs opacity-80">Get my current location</span>
-                        </div>
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={!formData.useCurrentLocation && formData.address ? 'default' : 'outline'}
-                        className="h-auto py-4"
-                        onClick={() => setFormData(prev => ({ ...prev, useCurrentLocation: false }))}
-                    >
-                        <MapPin className="w-5 h-5 mr-2" />
-                        <div className="text-left">
-                            <span className="block font-medium">Enter Manually</span>
-                            <span className="text-xs opacity-80">Type the address</span>
-                        </div>
-                    </Button>
-                </div>
+const LocationStep = ({ formData, setFormData, mediaFiles, setMediaFiles }) => {
+  const { getCurrentLocation, loading } = useUserLocation();
+  const [geocoding, setGeocoding] = useState(false);
 
-                {formData.useCurrentLocation && (
-                    <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-                        <div className="flex items-center gap-2">
-                            <Check className="w-5 h-5 text-success" />
-                            <span className="font-medium text-success">Location captured!</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Your current location will be used for pickup.
-                        </p>
-                    </div>
-                )}
+  /* ---------------- GPS HANDLER ---------------- */
+  const handleGetLocation = () => {
+    getCurrentLocation(({ lat, lng }) => {
+      setFormData(prev => ({
+        ...prev,
+        useCurrentLocation: true,
+        lat,
+        lng,
+      }));
 
-                {!formData.useCurrentLocation && (
-                    <div className="space-y-2">
-                        <Input
-                            placeholder="Search for a location..."
-                            value={formData.address}
-                            onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Start typing to search for your address
-                        </p>
-                    </div>
-                )}
+      toast.success('Location captured successfully');
+    });
+  };
+
+  /* ------------- MANUAL ADDRESS GEOCODING ------------- */
+  const handleAddressBlur = async () => {
+    if (!formData.address?.trim()) return;
+
+    try {
+      setGeocoding(true);
+
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          formData.address
+        )}.json?access_token=${MAPBOX_TOKEN}`
+      );
+
+      const data = await res.json();
+
+      if (!data.features?.length) {
+        toast.error('Unable to locate this address');
+        return;
+      }
+
+      const [lng, lat] = data.features[0].center;
+
+      setFormData(prev => ({
+        ...prev,
+        lat,
+        lng,
+        useCurrentLocation: false,
+      }));
+
+      toast.success('Address resolved');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to resolve address');
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  return (
+    <>
+      {/* ---------------- LOCATION SECTION ---------------- */}
+      <div className="space-y-4">
+        <Label>
+          <MapPin className="w-4 h-4 inline mr-2" />
+          Pickup Location
+        </Label>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* GPS BUTTON */}
+          <Button
+            type="button"
+            variant={formData.useCurrentLocation ? 'default' : 'outline'}
+            className="h-auto py-4"
+            onClick={handleGetLocation}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+              <MapPin className="w-5 h-5 mr-2" />
+            )}
+            <div className="text-left">
+              <span className="block font-medium">Use GPS</span>
+              <span className="text-xs opacity-80">
+                Get my current location
+              </span>
             </div>
+          </Button>
 
-            <div className="space-y-2">
-                <Label>
-                    <Camera className="w-4 h-4 inline mr-2" />
-                    Food Images (optional)
-                </Label>
-                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/30 transition-colors cursor-pointer">
-                    <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                        Click to upload or drag & drop
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        PNG, JPG up to 5MB
-                    </p>
-                </div>
+          {/* MANUAL BUTTON */}
+          <Button
+            type="button"
+            variant={!formData.useCurrentLocation ? 'default' : 'outline'}
+            className="h-auto py-4"
+            onClick={() =>
+              setFormData(prev => ({
+                ...prev,
+                useCurrentLocation: false,
+                lat: null,
+                lng: null,
+              }))
+            }
+          >
+            <MapPin className="w-5 h-5 mr-2" />
+            <div className="text-left">
+              <span className="block font-medium">Enter Manually</span>
+              <span className="text-xs opacity-80">
+                Type the address
+              </span>
             </div>
-        </>
-    );
+          </Button>
+        </div>
+
+        {/* MANUAL ADDRESS INPUT */}
+        {!formData.useCurrentLocation && (
+          <div className="space-y-2">
+            <Input
+              placeholder="Enter pickup address"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData(prev => ({
+                  ...prev,
+                  address: e.target.value,
+                }))
+              }
+              onBlur={handleAddressBlur}
+            />
+            {geocoding && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Resolving address…
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* GPS SUCCESS STATE */}
+        {formData.useCurrentLocation && formData.lat && (
+          <div className="p-4 rounded-xl bg-success/10 border border-success/20">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-success" />
+              <span className="font-medium text-success">
+                Location captured
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ---------------- MEDIA SECTION ---------------- */}
+      <div className="space-y-2 mt-6">
+        <Label>
+          <Camera className="w-4 h-4 inline mr-2" />
+          Food Images / Videos (optional)
+        </Label>
+
+        <Input
+          type="file"
+          multiple
+          accept="image/*,video/*"
+          onChange={(e) =>
+            setMediaFiles(Array.from(e.target.files))
+          }
+        />
+
+        {mediaFiles.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {mediaFiles.length} file(s) selected
+          </p>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default LocationStep;
