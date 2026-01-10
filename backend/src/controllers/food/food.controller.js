@@ -1,5 +1,6 @@
 import cloudinary from "../../config/cloudinary.js";
 import { FoodPost } from "../../models/food-post.model.js";
+import { User } from "../../models/user.model.js";
 
 // used by provider to create food post
 export const createFoodPost = async (req, res) => {
@@ -22,6 +23,13 @@ export const createFoodPost = async (req, res) => {
     if (!location?.coordinates || location.coordinates.length !== 2) {
       return res.status(400).json({ message: "Invalid location" });
     }
+
+    await User.findByIdAndUpdate(req.user.id, {
+      location: {
+        type: "Point",
+        coordinates: location.coordinates, // [lng, lat]
+      },
+    });
 
     const media = [];
 
@@ -91,29 +99,104 @@ export const getMyFoodPosts = async (req, res) => {
 export const getNearbyFoodPosts = async (req, res) => {
   try {
     const { lng, lat, radius = 5000 } = req.query;
+    console.log("longitude ", lng);
+    console.log("latitude ", lat);
+    console.log("radius ", radius);
+    
+    const longitude = Number(lng);
+    const latitude = Number(lat);
+    const maxDist = Number(radius);
 
-    if (!lng || !lat) {
+    if (isNaN(longitude) || isNaN(latitude)) {
+      return res.status(400).json({ message: "Invalid coordinates" });
+    }
+
+    if (!longitude || !latitude) {
       return res.status(400).json({ message: "Location required" });
     }
 
+    const now = new Date();
+
+    // Step 1: Geo + active posts
     const posts = await FoodPost.find({
       status: "active",
-      "availability.bestBefore": { $gt: new Date() },
       location: {
         $near: {
           $geometry: {
             type: "Point",
-            coordinates: [Number(lng), Number(lat)],
+            coordinates: [longitude, latitude],
           },
-          $maxDistance: Number(radius),
+          $maxDistance: maxDist,
         },
       },
     })
-      .populate("provider", "name organizationName isVerified")
+      .populate(
+        "provider",
+        "name organizationName isVerified location settings"
+      )
       .lean();
 
-    res.json({ posts });
+    // Step 2: Business rule filtering
+    const filtered = posts.filter((post) => {
+      // Quantity check
+      const remainingQty =
+        post.quantity.amount - post.reservedQuantity;
+      if (remainingQty <= 0) return false;
+
+      // Provider auto-expiry preference
+      const autoExpire =
+        post.provider?.settings?.providerPreferences?.autoExpireFoodPosts;
+    
+      if (autoExpire && post.availability.bestBefore < now) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Step 3: Shape response EXACTLY for frontend
+    const response = filtered.map((post) => ({
+      id: post._id,
+      title: post.title,
+      description: post.description,
+      foodType: post.foodType,
+      freshness: post.freshness,
+
+      quantity: {
+        amount: post.quantity.amount - post.reservedQuantity,
+        unit: post.quantity.unit,
+      },
+
+      pricing: post.pricing,
+      availability: post.availability,
+
+      provider: {
+        id: post.provider._id,
+        name: post.provider.name,
+        organizationName: post.provider.organizationName,
+        verified: post.provider.isVerified,
+        location: {
+          // Fallback logic in case provider location isn't perfectly synced yet, 
+          // though createFoodPost ensures it is.
+          lat: post.provider.location?.coordinates?.[1] || post.location.coordinates[1],
+          lng: post.provider.location?.coordinates?.[0] || post.location.coordinates[0],
+        },
+      },
+
+      location: {
+        lat: post.location.coordinates[1],
+        lng: post.location.coordinates[0],
+        address: post.location.address,
+      },
+
+      media: post.media,
+      createdAt: post.createdAt,
+    }));
+    console.log("response", response);
+
+    res.json({ posts: response });
   } catch (error) {
+    console.error("Find food error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

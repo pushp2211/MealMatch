@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Timer } from "lucide-react";
-import { getSeekerTimeRemaining } from "@/data/seekerMockData";
+import { getTimeRemaining } from "../utils/getTimeRemaining.util.js";
 
 const FoodList = ({ foods, selectedId, onSelect }) => {
   return (
@@ -10,7 +10,11 @@ const FoodList = ({ foods, selectedId, onSelect }) => {
 
         {foods.map((food) => {
           const isSelected = selectedId === food.id;
-
+          
+          const bestBefore = food.availability?.bestBefore;
+          const providerName = food.provider?.name || "Unknown Provider";
+          // Use the distance calculated in useFindFoodMap
+          const distance = food.distance ? `${food.distance} km` : "Nearby";
           return (
             <Card
               key={food.id}
@@ -24,17 +28,17 @@ const FoodList = ({ foods, selectedId, onSelect }) => {
               <CardContent className="px-4">
                 <h4 className="font-medium truncate">{food.title}</h4>
                 <p className="text-sm text-muted-foreground truncate">
-                  {food.provider.name}
+                  {providerName}
                 </p>
 
                 <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {food.provider.distance} km
+                    {distance}
                   </span>
                   <span className="flex items-center gap-1">
                     <Timer className="w-3 h-3" />
-                    {getSeekerTimeRemaining(food.bestBefore)}
+                    {getTimeRemaining(bestBefore)}
                   </span>
                 </div>
               </CardContent>

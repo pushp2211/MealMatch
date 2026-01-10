@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Search, Navigation } from "lucide-react";
+import { Search, Navigation, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import MapView from "@/components/maps/MapView";
 import MarkerLayer from "@/components/maps/layers/MarkerLayer";
@@ -21,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import FoodList from "./components/FoodList";
 import FoodCard from "./components/FoodCard";
 
-import { mockAvailableFood } from "@/data/seekerMockData";
+import api from "@/utils/axios";
 import { mockSeekerRequests } from "@/data/seekerMockData";
 import { calculateBearing } from "@/components/maps/utils/calculateBearing";
 
@@ -36,6 +37,9 @@ const formatDistance = (m) => `${(m / 1000).toFixed(1)} km`;
 const formatDuration = (s) => `${Math.round(s / 60)} min`;
 
 const SeekerFindFood = () => {
+  const [foods, setFoods] = useState([]);
+  const [loadingFoods, setLoadingFoods] = useState(false);
+
   const hasActivePickup = mockSeekerRequests.some(
     (req) => req.status === "accepted"
   );
@@ -86,7 +90,7 @@ const SeekerFindFood = () => {
 
   // Route info (only for navigation mode)
   const [routeInfo, setRouteInfo] = useState(null);
-
+  
   // ================= BEARING CALCULATION =================
   useEffect(() => {
     if (!isNavigation || !destinationLocation || !sessionLocation) return;
@@ -136,12 +140,38 @@ const SeekerFindFood = () => {
     };
   }, [isNavigation]);
 
+  useEffect(() => {
+    if (!sessionLocation?.lat || !sessionLocation?.lng) return;
+
+    // We use a timeout to wait for the user to stop sliding
+    const timeoutId = setTimeout(async () => {
+      try {
+        setLoadingFoods(true);
+
+        const res = await api.get("/api/food/nearby-providers", {
+          params: {
+            lat: sessionLocation.lat,
+            lng: sessionLocation.lng,
+            radius: radius * 1000, // Convert km to meters
+          },
+        });
+
+        setFoods(res.data.posts || []);
+        console.log("Fetched Foods:", res.data.posts);
+      } catch (err) {
+        console.error("Failed to fetch nearby food:", err);
+      } finally {
+        setLoadingFoods(false);
+      }
+    }, 600); // Wait 600ms after last change before calling API
+
+    // Cleanup: If effect runs again (slider moved), cancel previous timer
+    return () => clearTimeout(timeoutId);
+  }, [sessionLocation, radius]); // Dependencies remain the same
+
+
   // Filter + markers (Browse Mode)
-  const markers = useFindFoodMap(
-    mockAvailableFood,
-    sessionLocation,
-    radius
-  );
+  const markers = useFindFoodMap(foods, sessionLocation);
 
   // Robust auto-resize for Map
   useEffect(() => {
@@ -187,8 +217,10 @@ const SeekerFindFood = () => {
 
     mapRef.current.flyTo({
       center: [
-        selectedFood.provider.location.lng,
-        selectedFood.provider.location.lat,
+        // selectedFood.provider.location.lng,
+        // selectedFood.provider.location.lat,
+        selectedFood.location.lng,
+        selectedFood.location.lat,
       ],
       zoom: 14,
       speed: 1.2,
@@ -229,16 +261,18 @@ const SeekerFindFood = () => {
       setSuggestions([]);
       return;
     }
-
     const timeout = setTimeout(async () => {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?autocomplete=true&country=IN&access_token=${MAPBOX_TOKEN}`
-      );
-      const data = await res.json();
-      setSuggestions(data.features || []);
-      setShowSuggestions(true);
+      try {
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?autocomplete=true&country=IN&access_token=${MAPBOX_TOKEN}`
+        );
+        const data = await res.json();
+        setSuggestions(data.features || []);
+        setShowSuggestions(true);
+      } catch (e) {
+        console.error(e);
+      }
     }, 350);
-
     return () => clearTimeout(timeout);
   }, [query]);
 
@@ -314,7 +348,9 @@ const SeekerFindFood = () => {
               <span className="text-sm font-medium text-info w-12">
                 {radius} km
               </span>
-              <Badge variant="info">{markers.length} posts</Badge>
+              <Badge variant="info">
+                {loadingFoods ? <Loader2 className="w-3 h-3 animate-spin" /> : `${markers.length} posts`}
+              </Badge>
             </div>
           </div>
         )}
@@ -327,6 +363,14 @@ const SeekerFindFood = () => {
           ref={mapContainerRef}
           className={`flex-none lg:flex-1 ${isNavigation ? 'h-[100vh]' : 'min-h-[60vh]'} lg:min-h-0 relative transition-all duration-300 ease-in-out`}
         >
+          {/* MAP LOADING OVERLAY (When fetching foods) */}
+          {!isNavigation && loadingFoods && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-xs font-medium">Scanning area...</span>
+            </div>
+          )}
+
           <MapView center={sessionLocation} mapRef={mapRef} mapStyle={mapStyle}>
             {/* User current location */}
             <UserLocationMarker

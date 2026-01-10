@@ -1,10 +1,12 @@
-import { FoodPost } from "../models/foodPost.model.js";
 import { User } from "../models/user.model.js";
-import { cleanupFoodPostMedia } from "../controllers/food.controller.js";
+import { cleanupFoodPostMedia } from "../controllers/index.js";
+import { PickupRequest } from "../models/pickup-request.model.js";
+import { FoodPost } from "../models/food-post.model.js";
 
 const MEDIA_GRACE_PERIOD_MS = 24 * 60 * 60 * 1000; // 24h
 
 export const runFoodExpiryJob = async () => {
+  console.log("Cron Job: Running Food Expiry Check...");
   const now = new Date();
 
   /* -------- EXPIRE POSTS -------- */
@@ -12,17 +14,37 @@ export const runFoodExpiryJob = async () => {
     status: "active",
     "availability.bestBefore": { $lt: now },
   });
+  console.log(`Found ${posts.length} candidates for expiry.`);
 
   for (const post of posts) {
-    const provider = await User.findById(post.provider).lean();
+    try {
+      const provider = await User.findById(post.provider).lean();
 
-    if (!provider?.settings?.providerPreferences?.autoExpireFoodPosts) {
-      continue;
+      if (!provider?.settings?.providerPreferences?.autoExpireFoodPosts) {
+        continue;
+      }
+
+      // Expire food post
+      post.status = "expired";
+      post.expiredAt = now;
+      await post.save();
+
+      // Expire ALL pending pickup requests for this post
+      await PickupRequest.updateMany(
+        {
+          foodPost: post._id,
+          status: "pending",
+        },
+        {
+          status: "expired",
+          expiredAt: now,
+        }
+      );
+      console.log(`Expired post: ${post.title} (${post._id})`);
+    } catch (innerError) {
+      console.error(`Failed to expire post ${post._id}:`, innerError);
+      // Continue to next post even if one fails
     }
-
-    post.status = "expired";
-    post.expiredAt = now;
-    await post.save();
   }
 
   /* -------- CLEAN MEDIA (AFTER GRACE) -------- */
@@ -33,6 +55,11 @@ export const runFoodExpiryJob = async () => {
   });
 
   for (const post of cleanupCandidates) {
-    await cleanupFoodPostMedia(post);
+    try {
+      await cleanupFoodPostMedia(post);
+      console.log(`Cleaned media for: ${post.title}`);
+    } catch (mediaError) {
+      console.error(`Failed to clean media for ${post._id}:`, mediaError);
+    }
   }
 };

@@ -3,16 +3,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Timer, Star, ShieldCheck } from "lucide-react";
-import { getSeekerTimeRemaining } from "@/data/seekerMockData";
+import { getTimeRemaining } from "../utils/getTimeRemaining.util.js";
 
 const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
+  const maxQty = food?.quantity?.amount || 0;
+  const unit = food?.quantity?.unit || "units";
+  const bestBefore = food?.availability?.bestBefore;
+
+  // Extract the distance injected by useFindFoodMap
+  const distance = food?.distance ? `${food.distance} km` : "Nearby";
+
   const [quantity, setQuantity] = useState(
-    Math.min(10, food?.quantity || 1)
+    Math.min(10, maxQty > 0 ? 1 : 0)
   );
   const [note, setNote] = useState("");
 
   if (!food) return null;
-  const maxQty = food.quantity || 1;
 
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-md z-20">
@@ -23,7 +29,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
             <div>
               <h3 className="font-semibold text-lg">{food.title}</h3>
               <p className="text-sm text-muted-foreground">
-                from {food.provider.name}
+                from {food.provider?.name || "Unknown Provider"}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -36,7 +42,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
             <div className="rounded-lg bg-muted/40 p-3">
               <p className="text-muted-foreground">Quantity</p>
               <p className="font-medium">
-                {food.quantity} {food.quantityUnit}
+                {maxQty} {unit}
               </p>
             </div>
 
@@ -47,12 +53,12 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
 
             <div className="rounded-lg bg-muted/40 p-3 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              {food.provider.distance} km
+              {distance}
             </div>
 
             <div className="rounded-lg bg-muted/40 p-3 flex items-center gap-2">
               <Timer className="w-4 h-4" />
-              {getSeekerTimeRemaining(food.bestBefore)}
+              {getTimeRemaining(bestBefore)}
             </div>
           </div>
 
@@ -66,14 +72,14 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
           {/* PROVIDER */}
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="font-medium">{food.provider.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {food.provider.type}
-              </p>
+              <p className="font-medium">{food.provider?.name}</p>
+              {food.provider?.organizationName && (
+                 <p className="text-xs text-muted-foreground">
+                   {food.provider.organizationName}
+                 </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              {food.provider.rating}
               {food.provider.verified && (
                 <Badge className="ml-2 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
@@ -90,17 +96,19 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={maxQty === 0}
               >
                 −
               </Button>
               <span className="font-medium">
-                {quantity} {food.quantityUnit}
+                {quantity} {unit}
               </span>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setQuantity(q => Math.min(maxQty, q + 1))}
+                onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                disabled={maxQty === 0}
               >
                 +
               </Button>
@@ -108,7 +116,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Maximum available: {maxQty} {food.quantityUnit}
+            Maximum available: {maxQty} {unit}
           </p>
 
           {/* NOTE */}
@@ -140,6 +148,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
                   note,
                 })
               }
+              disabled={maxQty === 0}
             >
               {hasActivePickup ? "Request Anyway" : "Request Food"}
             </Button>

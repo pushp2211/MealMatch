@@ -5,14 +5,24 @@ dotenv.config({
 })
 
 import connectDB from "./db/index.js";
-import {app} from "./app.js" 
+import { app } from "./app.js"
+
+import cron from "node-cron";
+import { runFoodExpiryJob } from "./jobs/foodExpiry.job.js";
 
 connectDB()
-.then(() => {
-    app.listen(process.env.PORT || 8000, () => {
-        console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+    .then(() => {
+        // --- SCHEDULE THE JOB HERE ---
+        // Run every hour at minute 0 (e.g., 1:00, 2:00, 3:00...)
+        cron.schedule("0 * * * *", async () => {
+            console.log("Running scheduled food expiry check...");
+            await runFoodExpiryJob();
+        });
+
+        app.listen(process.env.PORT || 8000, () => {
+            console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+        })
     })
-})
-.catch((err) => {
-    console.log("MONGO db connection failed !!! ", err);
-})
+    .catch((err) => {
+        console.log("MONGO db connection failed !!! ", err);
+    })
