@@ -26,25 +26,30 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-    
-    const refreshToken = generateRefreshToken(user._id);
+
     const now = new Date();
-    
-    // FIX 1: Extract deviceId from headers
     const deviceId = req.headers["x-device-id"] || "unknown";
 
-    // FIX 2: Use now.getTime() for proper date arithmetic
+    // Create session
     const session = user.sessions.create({
-      refreshToken,
       role,
       deviceId,
       userAgent: req.headers["user-agent"],
       ip: req.ip,
       refreshTokenExpiresAt: new Date(now.getTime() + REFRESH_DAYS * 86400000),
       sessionExpiresAt: new Date(now.getTime() + SESSION_DAYS * 86400000),
+      previousRefreshToken: null, 
+      refreshToken: "pending..." 
     });
 
     user.sessions.push(session);
+    // Generate refresh token bound to session ID
+    const refreshToken = generateRefreshToken({
+      userId: user._id,
+      sessionId: session._id,
+    });
+    
+    session.refreshToken = refreshToken;
     await user.save();
 
     const accessToken = generateAccessToken({
@@ -53,17 +58,16 @@ export const login = async (req, res) => {
       sessionId: session._id,
     });
 
-    // Set tokens in HTTP-only cookies
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      maxAge: 15 * 60 * 1000, // 15 min
+      maxAge: 15 * 60 * 1000, // 15min
       sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production' // true in production
+      secure: process.env.NODE_ENV === 'production'
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: REFRESH_DAYS * 86400000, // 7 days
+      maxAge: REFRESH_DAYS * 86400000,  // 7 days
       sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production'
     });
@@ -85,26 +89,30 @@ export const logout = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
+      // Find user with either current or previous token to ensure logout works even during rotation
       const user = await User.findOne({
-        "sessions.refreshToken": refreshToken,
+        $or: [
+          { "sessions.refreshToken": refreshToken },
+          { "sessions.previousRefreshToken": refreshToken }
+        ]
       });
 
       if (user) {
         user.sessions = user.sessions.filter(
-          (s) => s.refreshToken !== refreshToken
+          (s) => s.refreshToken !== refreshToken && s.previousRefreshToken !== refreshToken
         );
         await user.save();
       }
     }
 
-    res.clearCookie("accessToken", { 
-      httpOnly: true, 
-      sameSite: 'Lax', 
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production'
     });
-    res.clearCookie("refreshToken", { 
-      httpOnly: true, 
-      sameSite: 'Lax', 
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production'
     });
 
@@ -126,14 +134,14 @@ export const logoutAll = async (req, res) => {
     user.sessions = [];
     await user.save();
 
-    res.clearCookie("accessToken", { 
-      httpOnly: true, 
-      sameSite: 'Lax', 
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production'
     });
-    res.clearCookie("refreshToken", { 
-      httpOnly: true, 
-      sameSite: 'Lax', 
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production'
     });
 

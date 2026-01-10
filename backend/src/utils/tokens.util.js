@@ -10,9 +10,9 @@ export const generateAccessToken = ({ userId, role, sessionId }) =>
     { expiresIn: "15m" }
   );
 
-export const generateRefreshToken = (userId) =>
+export const generateRefreshToken = ({ userId, sessionId }) =>
   jwt.sign(
-    { id: userId },
+    { id: userId, sid: sessionId },
     REFRESH_SECRET,
     { expiresIn: "7d" }
   );

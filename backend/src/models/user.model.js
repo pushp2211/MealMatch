@@ -10,6 +10,17 @@ const sessionSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Store previous token for Grace Period support
+    previousRefreshToken: {
+      type: String,
+      default: null
+    },
+
+    // Track when rotation happened to enforce grace window
+    refreshTokenRotatedAt: {
+      type: Date,
+    },
+
     role: {
       type: String,
       enum: ["provider", "seeker"],
@@ -29,6 +40,12 @@ const sessionSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    
+    // Optional: Useful for debugging/security dashboards
+    lastUsedAt: {
+      type: Date,
+      default: Date.now
+    }
   },
   { timestamps: true }
 );
