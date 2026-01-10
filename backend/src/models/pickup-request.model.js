@@ -23,7 +23,11 @@ const pickupRequestSchema = new mongoose.Schema(
       index: true,
     },
 
-    quantityRequested: Number,
+    quantityRequested: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
 
     note: String,
 
@@ -41,13 +45,34 @@ const pickupRequestSchema = new mongoose.Schema(
       index: true,
     },
 
+    // Snapshots (important for history UI)
+    foodTitleSnapshot: String,
+    foodTypeSnapshot: String,
+
     distanceKm: Number,
     etaMinutes: Number,
 
     acceptedAt: Date,
     completedAt: Date,
+    cancelledAt: Date,
+    expiredAt: Date,
   },
   { timestamps: true }
 );
 
-export const PickupRequest = mongoose.model("PickupRequest", pickupRequestSchema);
+/**
+ * Prevent same seeker from creating multiple pending requests
+ * for the same food post.
+ */
+pickupRequestSchema.index(
+  { foodPost: 1, seeker: 1, status: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: "pending" },
+  }
+);
+
+export const PickupRequest = mongoose.model(
+  "PickupRequest",
+  pickupRequestSchema
+);

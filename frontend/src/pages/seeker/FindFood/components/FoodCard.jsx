@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Timer, Star, ShieldCheck } from "lucide-react";
+import { MapPin, Timer, ShieldCheck, Loader2 } from "lucide-react";
 import { getTimeRemaining } from "../utils/getTimeRemaining.util.js";
 
 const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
@@ -17,8 +17,24 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
     Math.min(10, maxQty > 0 ? 1 : 0)
   );
   const [note, setNote] = useState("");
+  const [isRequesting, setIsRequesting] = useState(false);
 
   if (!food) return null;
+
+  const handleRequestClick = async () => {
+    if (isRequesting) return;
+
+    try {
+      setIsRequesting(true);
+      await onRequest({
+        food,
+        quantity,
+        note,
+      });
+    } finally {
+      setIsRequesting(false);
+    }
+  };
 
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-md z-20">
@@ -97,7 +113,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
                 size="sm"
                 variant="outline"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={maxQty === 0}
+                disabled={maxQty === 0 || isRequesting}
               >
                 −
               </Button>
@@ -108,7 +124,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
                 size="sm"
                 variant="outline"
                 onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
-                disabled={maxQty === 0}
+                disabled={maxQty === 0 || isRequesting}
               >
                 +
               </Button>
@@ -125,6 +141,7 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
             placeholder="Note to provider (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
+            disabled={isRequesting}
           />
 
           {/* ACTIVE PICKUP GUARD */}
@@ -141,16 +158,20 @@ const FoodCard = ({ food, onClose, onRequest, hasActivePickup = false }) => {
               Cancel
             </Button>
             <Button
-              onClick={() =>
-                onRequest({
-                  food,
-                  quantity,
-                  note,
-                })
-              }
-              disabled={maxQty === 0}
+              onClick={handleRequestClick}
+              disabled={maxQty === 0 || isRequesting}
+              className="active:scale-95 transition-transform"
             >
-              {hasActivePickup ? "Request Anyway" : "Request Food"}
+              {isRequesting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Requesting...
+                </>
+              ) : hasActivePickup ? (
+                "Request Anyway"
+              ) : (
+                "Request Food"
+              )}
             </Button>
           </div>
         </CardContent>

@@ -26,6 +26,8 @@ import api from "@/utils/axios";
 import { mockSeekerRequests } from "@/data/seekerMockData";
 import { calculateBearing } from "@/components/maps/utils/calculateBearing";
 
+import { sendPickupRequest } from "@/api/pickupRequest.api";
+
 const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 };
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const SESSION_LOCATION_KEY = "mealMatch:seeker:sessionLocation";
@@ -90,7 +92,7 @@ const SeekerFindFood = () => {
 
   // Route info (only for navigation mode)
   const [routeInfo, setRouteInfo] = useState(null);
-  
+
   // ================= BEARING CALCULATION =================
   useEffect(() => {
     if (!isNavigation || !destinationLocation || !sessionLocation) return;
@@ -276,6 +278,24 @@ const SeekerFindFood = () => {
     return () => clearTimeout(timeout);
   }, [query]);
 
+  // Handle creating pickup request
+  const handleRequestPickup = async ({ food, quantity, note }) => {
+    try {
+      await sendPickupRequest({
+        foodPostId: food.id,
+        quantityRequested: quantity,
+        note,
+      });
+
+      toast.success("Pickup request sent successfully");
+      setSelectedFood(null);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to send pickup request"
+      );
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full">
       <motion.div
@@ -323,7 +343,7 @@ const SeekerFindFood = () => {
                 variant="outline"
                 disabled={gpsLoading}
                 onClick={() => {
-                  clearWatch(); 
+                  clearWatch();
                   getCurrentLocation((loc) => {
                     if (loc) setSessionLocation(loc);
                   });
@@ -482,7 +502,7 @@ const SeekerFindFood = () => {
         food={selectedFood}
         hasActivePickup={hasActivePickup}
         onClose={() => setSelectedFood(null)}
-        onRequest={() => setSelectedFood(null)}
+        onRequest={handleRequestPickup}
       />
     </div>
   );
