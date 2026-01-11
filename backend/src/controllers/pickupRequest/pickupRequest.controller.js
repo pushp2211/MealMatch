@@ -1,6 +1,26 @@
 import mongoose from "mongoose";
 import { FoodPost } from "../../models/food-post.model.js";
 import { PickupRequest } from "../../models/pickup-request.model.js";
+import { User } from "../../models/user.model.js";
+
+// --- Helper: Calculate Distance (Haversine Formula) ---
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Returns distance in km
+};
 
 /* ---------------- CREATE PICKUP REQUEST (SEEKER) ---------------- */
 export const createPickupRequest = async (req, res) => {
@@ -9,7 +29,7 @@ export const createPickupRequest = async (req, res) => {
       return res.status(403).json({ message: "Only seekers can request pickup" });
     }
 
-    const { foodPostId, quantityRequested, note } = req.body;
+    const { foodPostId, quantityRequested, note, userLocation } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(foodPostId)) {
       return res.status(400).json({ message: "Invalid food post" });
@@ -57,6 +77,42 @@ export const createPickupRequest = async (req, res) => {
         .status(400)
         .json({ message: "Requested quantity exceeds availability" });
     }
+
+    // ----------------------- Calculate Distance & ETA (Hybrid) ----------------
+    let distanceKm = 0;
+    let etaMinutes = 0;
+    
+    let seekerLat, seekerLng;
+    // 1. Try Frontend Location First (Most Accurate context)
+    if (userLocation?.lat && userLocation?.lng) {
+      seekerLat = parseFloat(userLocation.lat);
+      seekerLng = parseFloat(userLocation.lng);
+    } 
+    // 2. Fallback to Database Location (Profile Address)
+    else {
+      const seeker = await User.findById(req.user.id).select("location");
+      if (seeker?.location?.coordinates?.length === 2) {
+        // Mongo stores as [lng, lat]
+        seekerLng = seeker.location.coordinates[0];
+        seekerLat = seeker.location.coordinates[1];
+      }
+    }
+
+    // 3. Calculate if we have valid coordinates
+    if (seekerLat && seekerLng && foodPost.location?.coordinates?.length === 2) {
+      const [providerLng, providerLat] = foodPost.location.coordinates;
+
+      const rawDist = calculateDistance(
+        seekerLat,
+        seekerLng,
+        providerLat,
+        providerLng
+      );
+      
+      distanceKm = parseFloat(rawDist.toFixed(1)); 
+      etaMinutes = Math.ceil(distanceKm * 3 + 5); 
+    }
+    // ----------------------------------------------------------------------------
 
     // AUTO-ACCEPT SUPPORT
     let status = "pending";
@@ -109,6 +165,8 @@ export const createPickupRequest = async (req, res) => {
       acceptedAt,
       foodTitleSnapshot: foodPost.title,
       foodTypeSnapshot: foodPost.foodType,
+      distanceKm,
+      etaMinutes,
     });
 
     res.status(201).json({

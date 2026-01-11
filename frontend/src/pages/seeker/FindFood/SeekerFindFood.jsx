@@ -285,6 +285,7 @@ const SeekerFindFood = () => {
         foodPostId: food.id,
         quantityRequested: quantity,
         note,
+        userLocation: sessionLocation,
       });
 
       toast.success("Pickup request sent successfully");

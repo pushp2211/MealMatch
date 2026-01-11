@@ -4,11 +4,13 @@ export const sendPickupRequest = async ({
   foodPostId,
   quantityRequested,
   note,
+  userLocation,
 }) => {
   const res = await api.post("/api/pickup-requests", {
     foodPostId,
     quantityRequested,
     note,
+    userLocation,
   });
 
   return res.data;
