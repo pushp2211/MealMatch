@@ -14,7 +14,7 @@ export const getSeekerIcon = (type) => {
 export const filterRequests = (requests, filter) => {
   if (filter === 'all') {
     return requests.filter(
-      (r) => r.status !== 'completed' && r.status !== 'rejected'
+      (r) => r.status !== 'completed' && r.status !== 'declined' && r.status !== 'expired' && r.status !== 'cancelled'
     );
   }
   return requests.filter((r) => r.status === filter);

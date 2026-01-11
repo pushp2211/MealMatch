@@ -5,14 +5,12 @@ import { motion } from 'framer-motion';
 import {
   Clock,
   MapPin,
-  Star,
   Check,
   X,
   Phone,
   Navigation,
-  AlertTriangle,
 } from 'lucide-react';
-import { formatTimeAgo } from '@/data/mockData';
+import { formatDistanceToNow } from 'date-fns';
 import { getSeekerIcon } from '../utils/requests.utils';
 
 const RequestCard = ({
@@ -21,9 +19,15 @@ const RequestCard = ({
   onAccept,
   onReject,
   onComplete,
-  onNoShow,
 }) => {
-  const SeekerIcon = getSeekerIcon(request.seeker.type);
+  // Safe access to nested objects from backend population
+  const seeker = request.seeker || {};
+  const foodPost = request.foodPost || {};
+  
+  // Use MongoDB _id
+  const requestId = request._id;
+
+  const SeekerIcon = getSeekerIcon(seeker.seekerType || 'individual');
   const isAccepted = request.status === 'accepted';
 
   return (
@@ -44,44 +48,42 @@ const RequestCard = ({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold">{request.seeker.name}</h3>
-                {request.seeker.verified && (
+                <h3 className="font-semibold">{seeker.name || "Unknown User"}</h3>
+                {seeker.isVerified && (
                   <Badge variant="info" className="text-[10px]">
                     Verified
                   </Badge>
                 )}
                 <Badge variant="muted" className="text-[10px] capitalize">
-                  {request.seeker.type}
+                  {seeker.seekerType || 'User'}
                 </Badge>
               </div>
 
               <p className="text-sm text-muted-foreground mt-0.5">
                 Requesting:{' '}
-                <span className="font-medium">{request.foodPost.title}</span>
+                <span className="font-medium">{foodPost.title || "Food Item"}</span>
               </p>
 
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-accent fill-accent" />
-                  {request.seeker.rating}
-                </span>
-                <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  {request.distance} km
+                  {request.distanceKm ? `${request.distanceKm} km` : 'Nearby'}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  ~{request.eta} min
+                  {request.etaMinutes ? `~${request.etaMinutes} min` : '~15 min'}
                 </span>
               </div>
             </div>
 
             <div className="text-left sm:text-right">
               <Badge variant="accent" className="mb-1">
-                {request.requestedQuantity} {request.foodPost.quantityUnit}
+                {request.quantityRequested} {foodPost.quantity?.unit || 'units'}
               </Badge>
               <p className="text-xs text-muted-foreground">
-                {formatTimeAgo(request.createdAt)}
+                {request.createdAt 
+                  ? formatDistanceToNow(new Date(request.createdAt), { addSuffix: true }) 
+                  : 'Just now'}
               </p>
             </div>
           </div>
@@ -91,14 +93,14 @@ const RequestCard = ({
             <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t">
               <Button
                 className="flex-1 bg-green-500 text-white"
-                onClick={() => onAccept(request.id)}
+                onClick={() => onAccept(requestId)}
               >
                 <Check className="w-4 h-4 mr-2" />
                 Accept Request
               </Button>
               <Button
                 className="flex-1 bg-red-200 text-red-700"
-                onClick={() => onReject(request.id)}
+                onClick={() => onReject(requestId)}
               >
                 <X className="w-4 h-4 mr-2" />
                 Decline
@@ -108,11 +110,11 @@ const RequestCard = ({
 
           {request.status === 'accepted' && (
             <div className="mt-4 pt-4 border-t space-y-3">
-              {request.seeker.phone && (
+              {seeker.phone && (
                 <Button variant="outline" className="w-full" asChild>
-                  <a href={`tel:${request.seeker.phone}`}>
+                  <a href={`tel:${seeker.phone}`}>
                     <Phone className="w-4 h-4 mr-2" />
-                    Call: {request.seeker.phone}
+                    Call: {seeker.phone}
                   </a>
                 </Button>
               )}
@@ -120,17 +122,10 @@ const RequestCard = ({
               <div className="flex gap-2">
                 <Button
                   className="flex-1 bg-green-500 text-white"
-                  onClick={() => onComplete(request.id)}
+                  onClick={() => onComplete(requestId)}
                 >
                   <Navigation className="w-4 h-4 mr-2" />
                   Mark Completed
-                </Button>
-                <Button
-                  size="icon"
-                  className="bg-red-200 text-red-700"
-                  onClick={() => onNoShow(request.id)}
-                >
-                  <AlertTriangle className="w-4 h-4" />
                 </Button>
               </div>
             </div>

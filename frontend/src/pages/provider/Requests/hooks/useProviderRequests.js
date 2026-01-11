@@ -1,51 +1,106 @@
-import { useState } from 'react';
-import { mockPickupRequests } from '@/data/mockData';
-import { toast } from 'sonner';
-import { filterRequests, countByStatus } from '../utils/requests.utils';
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+
+import {
+  fetchProviderPickupRequests,
+  acceptPickupRequest,
+  declinePickupRequest,
+  completePickupRequest,
+} from "@/api/pickupRequest.api";
+
+import { filterRequests, countByStatus } from "../utils/requests.utils";
 
 export const useProviderRequests = () => {
-  const [requests, setRequests] = useState(mockPickupRequests);
-  const [filter, setFilter] = useState('all');
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
 
+  /* ================= FETCH REQUESTS ================= */
+  const fetchRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetchProviderPickupRequests();
+      setRequests(res.data.requests || []);
+    } catch (error) {
+      console.error("Failed to fetch provider requests:", error);
+      toast.error("Failed to load pickup requests.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
+
+  /* ================= DERIVED DATA ================= */
   const filteredRequests = filterRequests(requests, filter);
-  const pendingCount = countByStatus(requests, 'pending');
-  const acceptedCount = countByStatus(requests, 'accepted');
+  const pendingCount = countByStatus(requests, "pending");
+  const acceptedCount = countByStatus(requests, "accepted");
 
-  const handleAccept = (id) => {
+  /* ================= ACTION HANDLERS ================= */
+  const handleAccept = async (id) => {
+    // Optimistic UI: Update status immediately
     setRequests((prev) =>
       prev.map((r) =>
-        r.id === id ? { ...r, status: 'accepted', acceptedAt: new Date() } : r
+        r._id === id ? { ...r, status: "accepted" } : r
       )
     );
-    toast.success('Request accepted! Contact details unlocked.');
+
+    try {
+      await acceptPickupRequest(id);
+      toast.success("Request accepted! Contact details unlocked.");
+      fetchRequests(); // Sync with server timestamps
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to accept request"
+      );
+      fetchRequests(); // Rollback on error
+    }
   };
 
-  const handleReject = (id) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'rejected' } : r))
-    );
-    toast.info('Request declined.');
-  };
-
-  const handleComplete = (id) => {
+  const handleReject = async (id) => {
+    // Optimistic UI: Mark as rejected (will be hidden by filter)
     setRequests((prev) =>
       prev.map((r) =>
-        r.id === id
-          ? { ...r, status: 'completed', completedAt: new Date() }
-          : r
+        r._id === id ? { ...r, status: "declined" } : r
       )
     );
-    toast.success('Pickup completed! Thank you for your donation.');
+
+    try {
+      await declinePickupRequest(id);
+      toast.info("Request declined.");
+      fetchRequests();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to decline request"
+      );
+      fetchRequests();
+    }
   };
 
-  const handleNoShow = (id) => {
+  const handleComplete = async (id) => {
+    // Optimistic UI
     setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'no-show' } : r))
+      prev.map((r) =>
+        r._id === id ? { ...r, status: "completed" } : r
+      )
     );
-    toast.warning('Marked as no-show.');
+
+    try {
+      await completePickupRequest(id);
+      toast.success("Pickup completed! Thank you for your donation.");
+      fetchRequests();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to complete pickup"
+      );
+      fetchRequests();
+    }
   };
 
   return {
+    loading,
     filter,
     setFilter,
     filteredRequests,
@@ -54,6 +109,5 @@ export const useProviderRequests = () => {
     handleAccept,
     handleReject,
     handleComplete,
-    handleNoShow,
   };
 };

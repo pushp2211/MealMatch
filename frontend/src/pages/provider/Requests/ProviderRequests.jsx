@@ -1,5 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
 import { useProviderRequests } from './hooks/useProviderRequests';
 import RequestsHeader from './components/RequestsHeader';
@@ -9,6 +10,7 @@ import RequestCard from './components/RequestCard';
 
 const ProviderRequests = () => {
   const {
+    loading,
     filter,
     setFilter,
     filteredRequests,
@@ -17,7 +19,6 @@ const ProviderRequests = () => {
     handleAccept,
     handleReject,
     handleComplete,
-    handleNoShow,
   } = useProviderRequests();
 
   return (
@@ -37,23 +38,29 @@ const ProviderRequests = () => {
         </TabsList>
       </Tabs>
 
-      <AnimatePresence mode="popLayout">
-        {filteredRequests.length === 0 ? (
-          <RequestsEmptyState />
-        ) : (
-          filteredRequests.map((request, index) => (
-            <RequestCard
-              key={request.id}
-              request={request}
-              index={index}
-              onAccept={handleAccept}
-              onReject={handleReject}
-              onComplete={handleComplete}
-              onNoShow={handleNoShow}
-            />
-          ))
-        )}
-      </AnimatePresence>
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <AnimatePresence mode="popLayout">
+          {filteredRequests.length === 0 ? (
+            <RequestsEmptyState />
+          ) : (
+            filteredRequests.map((request, index) => (
+              <RequestCard
+                key={request._id} 
+                request={request}
+                index={index}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                onComplete={handleComplete}
+              />
+            ))
+          )}
+        </AnimatePresence>
+      )}
     </div>
   );
 };

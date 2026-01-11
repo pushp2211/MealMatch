@@ -130,31 +130,103 @@ export const createPickupRequest = async (req, res) => {
   }
 };
 
+/* ---------------- GET PROVIDER PICKUP REQUESTS ---------------- */
+export const getProviderPickupRequests = async (req, res) => {
+  try {
+    if (req.user.role !== "provider") {
+      return res.status(403).json({ message: "Only providers allowed" });
+    }
+
+    const requests = await PickupRequest.find({
+      provider: req.user.id,
+      status: { $in: ["pending", "accepted"] },
+    })
+      .populate("seeker", "name phone isVerified seekerType")
+      .populate("foodPost", "title quantity.unit")
+      .sort({ createdAt: -1 });
+
+    res.json({ requests });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch pickup requests" });
+  }
+};
+
+/* ---------------- COMPLETE PICKUP (PROVIDER) ---------------- */
+export const completePickupRequest = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const request = await PickupRequest.findOne({
+      _id: req.params.id,
+      provider: req.user.id,
+      status: "accepted",
+    }).session(session);
+
+    if (!request) {
+      throw new Error("Invalid pickup request");
+    }
+
+    request.status = "completed";
+    request.completedAt = new Date();
+    await request.save({ session });
+
+    const foodPost = await FoodPost.findById(request.foodPost).session(session);
+
+    if (
+      foodPost.reservedQuantity === foodPost.quantity.amount &&
+      foodPost.status !== "completed"
+    ) {
+      foodPost.status = "completed";
+      await foodPost.save({ session });
+    }
+
+    await session.commitTransaction();
+    res.json({ message: "Pickup completed" });
+  } catch (err) {
+    await session.abortTransaction();
+    res.status(400).json({ message: err.message });
+  } finally {
+    session.endSession();
+  }
+};
+
+
 /* ---------------- ACCEPT REQUEST (PROVIDER) ---------------- */
 export const acceptPickupRequest = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const request = await PickupRequest.findById(req.params.id).session(
-      session
-    );
-    if (!request || request.status !== "pending") {
-      throw new Error("Invalid pickup request");
+    const request = await PickupRequest.findOne({
+      _id: req.params.id,
+      provider: req.user.id,
+      status: "pending",
+    }).session(session);
+
+    if (!request) {
+      throw new Error("Invalid or already processed request");
     }
 
-    if (String(request.provider) !== req.user.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const foodPost = await FoodPost.findById(request.foodPost).session(
-      session
+    const updatedFoodPost = await FoodPost.findOneAndUpdate(
+      {
+        _id: request.foodPost,
+        status: "active",
+        $expr: {
+          $gte: [
+            { $subtract: ["$quantity.amount", "$reservedQuantity"] },
+            request.quantityRequested,
+          ],
+        },
+      },
+      {
+        $inc: { reservedQuantity: request.quantityRequested },
+      },
+      { new: true, session }
     );
 
-    const remaining =
-      foodPost.quantity.amount - foodPost.reservedQuantity;
-
-    if (request.quantityRequested > remaining) {
+    if (!updatedFoodPost) {
       throw new Error("Insufficient quantity");
     }
 
@@ -162,8 +234,13 @@ export const acceptPickupRequest = async (req, res) => {
     request.acceptedAt = new Date();
     await request.save({ session });
 
-    foodPost.reservedQuantity += request.quantityRequested;
-    await foodPost.save({ session });
+    if (
+      updatedFoodPost.reservedQuantity ===
+      updatedFoodPost.quantity.amount
+    ) {
+      updatedFoodPost.status = "reserved";
+      await updatedFoodPost.save({ session });
+    }
 
     await session.commitTransaction();
     res.json({ message: "Pickup request accepted" });
@@ -175,22 +252,29 @@ export const acceptPickupRequest = async (req, res) => {
   }
 };
 
+
 /* ---------------- DECLINE REQUEST ---------------- */
 export const declinePickupRequest = async (req, res) => {
-  const request = await PickupRequest.findById(req.params.id);
-  if (!request || request.status !== "pending") {
-    return res.status(400).json({ message: "Invalid request" });
-  }
+  const result = await PickupRequest.updateOne(
+    {
+      _id: req.params.id,
+      provider: req.user.id,
+      status: "pending",
+    },
+    {
+      status: "declined",
+    }
+  );
 
-  if (String(request.provider) !== req.user.id) {
-    return res.status(403).json({ message: "Unauthorized" });
+  if (result.matchedCount === 0) {
+    return res.status(400).json({
+      message: "Invalid or already processed request",
+    });
   }
-
-  request.status = "declined";
-  await request.save();
 
   res.json({ message: "Request declined" });
 };
+
 
 /* ---------------- CANCEL REQUEST (SEEKER) ---------------- */
 export const cancelPickupRequest = async (req, res) => {
