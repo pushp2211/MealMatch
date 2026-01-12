@@ -333,21 +333,50 @@ export const declinePickupRequest = async (req, res) => {
   res.json({ message: "Request declined" });
 };
 
+/* ---------------- GET SEEKER PICKUP REQUESTS ---------------- */
+export const getSeekerPickupRequests = async (req, res) => {
+  try {
+    if (req.user.role !== "seeker") {
+      return res.status(403).json({ message: "Only seekers allowed" });
+    }
+
+    const requests = await PickupRequest.find({
+      seeker: req.user.id,
+      status: { $in: ["pending", "accepted"] },
+    })
+      .populate("provider", "name phone isVerified")
+      .populate("foodPost", "title quantity.unit availability.bestBefore")
+      .sort({ createdAt: -1 });
+
+    res.json({ requests });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch seeker requests" });
+  }
+};
 
 /* ---------------- CANCEL REQUEST (SEEKER) ---------------- */
 export const cancelPickupRequest = async (req, res) => {
-  const request = await PickupRequest.findById(req.params.id);
-  if (!request || request.status !== "pending") {
-    return res.status(400).json({ message: "Cannot cancel request" });
+  if (req.user.role !== "seeker") {
+    return res.status(403).json({ message: "Only seekers allowed" });
   }
 
-  if (String(request.seeker) !== req.user.id) {
-    return res.status(403).json({ message: "Unauthorized" });
+  const result = await PickupRequest.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      seeker: req.user.id,
+      status: "pending",
+    },
+    {
+      status: "cancelled",
+      cancelledAt: new Date(),
+    }
+  );
+
+  if (!result) {
+    return res.status(400).json({
+      message: "Invalid or already processed request",
+    });
   }
-
-  request.status = "cancelled";
-  request.cancelledAt = new Date();
-  await request.save();
-
   res.json({ message: "Request cancelled" });
 };

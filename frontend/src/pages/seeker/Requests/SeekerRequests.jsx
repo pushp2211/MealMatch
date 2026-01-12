@@ -1,23 +1,20 @@
 import { motion } from 'framer-motion';
 import { Tabs } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 
 import { useSeekerRequests } from './hooks/useSeekerRequests';
 import RequestsTabs from './components/RequestsTabs';
 import PendingRequests from './components/PendingRequests';
 import AcceptedRequests from './components/AcceptedRequests';
-import HistoryRequests from './components/HistoryRequests';
+import { Loader2 } from 'lucide-react';
 
 const SeekerRequests = () => {
   const {
+    loading,
     pendingRequests,
     acceptedRequests,
-    otherRequests,
+    cancelRequest,
+    cancellingIds,
   } = useSeekerRequests();
-
-  const handleCancelRequest = (id) => {
-    toast.success('Request cancelled');
-  };
 
   return (
     <div className="bg-amber-200 h-full w-full overflow-y-auto py-6 sm:py-8 lg:py-10 px-4 sm:px-6 md:px-8 lg:px-[10%]">
@@ -32,22 +29,26 @@ const SeekerRequests = () => {
         </p>
       </motion.div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
-        <RequestsTabs
-          pendingCount={pendingRequests.length}
-          acceptedCount={acceptedRequests.length}
-          historyCount={otherRequests.length}
-        />
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <Tabs defaultValue="pending" className="space-y-4">
+          <RequestsTabs
+            pendingCount={pendingRequests.length}
+            acceptedCount={acceptedRequests.length}
+          />
 
-        <PendingRequests
-          requests={pendingRequests}
-          onCancel={handleCancelRequest}
-        />
+          <PendingRequests
+            requests={pendingRequests}
+            onCancel={cancelRequest}
+            cancellingIds={cancellingIds}
+          />
 
-        <AcceptedRequests requests={acceptedRequests} />
-
-        <HistoryRequests requests={otherRequests} />
-      </Tabs>
+          <AcceptedRequests requests={acceptedRequests} />
+        </Tabs>
+      )}
     </div>
   );
 };
