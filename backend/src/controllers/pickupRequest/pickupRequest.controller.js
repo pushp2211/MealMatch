@@ -338,6 +338,7 @@ export const declinePickupRequest = async (req, res) => {
     },
     {
       status: "declined",
+      declinedAt: new Date(),
     }
   );
 

@@ -59,6 +59,7 @@ const pickupRequestSchema = new mongoose.Schema(
 
     acceptedAt: Date,
     completedAt: Date,
+    declinedAt: Date,
     cancelledAt: Date,
     expiredAt: Date,
   },

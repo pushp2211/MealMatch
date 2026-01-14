@@ -1,5 +1,10 @@
 export const prepareActivityFeed = (activities) => {
-  const sortedActivities = [...activities].sort(
+  const normalized = activities.map((activity) => ({
+    ...activity,
+    timestamp: new Date(activity.timestamp),
+  }));
+
+  const sortedActivities = normalized.sort(
     (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
   );
 

@@ -1,15 +1,36 @@
-import { useMemo } from 'react';
-import { mockActivityFeed } from '@/data/mockData';
-import { mockSeekerActivityFeed } from '@/data/seekerMockData';
-import { prepareActivityFeed } from '../utils/activityGrouping';
+import api from "@/utils/axios";
+import { useEffect, useMemo, useState } from "react";
+import { prepareActivityFeed } from "../utils/activityGrouping";
 
-export const useActivityFeed = (role) => {
+export const useActivityFeed = () => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchActivityFeed = async () => {
+      try {
+        const res = await api.get("/api/activity");
+        if (mounted) {
+          setActivities(res.data.activities || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch activity feed", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchActivityFeed();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return useMemo(() => {
-    const feed =
-      role === 'seeker'
-        ? mockSeekerActivityFeed
-        : mockActivityFeed;
-
-    return prepareActivityFeed(feed);
-  }, [role]);
+    if (loading) return {};
+    return prepareActivityFeed(activities);
+  }, [activities, loading]);
 };
