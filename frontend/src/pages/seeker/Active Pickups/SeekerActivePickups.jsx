@@ -9,7 +9,8 @@ import { useSeekerActivePickups } from './hooks/useSeekerActivePickups';
 import { useNavigate } from "react-router-dom";
 
 const SeekerActivePickups = () => {
-  const { activePickups } = useSeekerActivePickups();
+  const { activePickups, loading } = useSeekerActivePickups();
+  console.log("active", activePickups);
 
   const navigate = useNavigate();
   const handleNavigate = (pickup) => {
@@ -19,7 +20,15 @@ const SeekerActivePickups = () => {
         pickup,
       },
     });
-  };
+  };  
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <p className="text-muted-foreground animate-pulse">Loading active pickups...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full overflow-y-auto space-y-6 py-6 px-4 lg:px-[10%]">

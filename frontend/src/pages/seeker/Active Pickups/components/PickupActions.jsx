@@ -4,24 +4,26 @@ import { useSeekerActivePickups } from '../hooks/useSeekerActivePickups';
 
 const PickupActions = ({ pickup }) => {
   const { markCompleted, reportIssue } = useSeekerActivePickups();
-
+  // console.log("pickup", pickup);
   return (
     <div className="flex flex-wrap gap-3">
-      <Button className="flex-1" onClick={() => markCompleted(pickup.id)}>
+      <Button className="flex-1" onClick={()=>{markCompleted(pickup.pickupCode)}}>
         <CheckCircle className="w-4 h-4 mr-2" />
         Mark as Completed
       </Button>
 
       {pickup.providerPhone && (
         <Button variant="outline">
-          <Phone className="w-4 h-4 mr-2" />
-          Call Provider
+          <a href={`tel:${pickup.providerPhone}`} className='flex'>
+            <Phone className="w-4 h-4 mr-2" />
+            Call Provider
+          </a>
         </Button>
       )}
 
       <Button
         variant="outline"
-        onClick={() => reportIssue(pickup.id)}
+        onClick={reportIssue}
       >
         <AlertTriangle className="w-4 h-4 mr-2" />
         Report Issue

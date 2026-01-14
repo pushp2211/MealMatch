@@ -50,18 +50,6 @@ const ActivePickupCard = ({ pickup, index, onNavigate }) => {
                 </div>
               </div>
             </div>
-
-            <div className="text-right">
-              <div className="flex items-center gap-1 text-warning justify-end">
-                <Star className="w-4 h-4 fill-current" />
-                <span className="font-medium">
-                  {pickup.food.provider.rating}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {pickup.food.provider.totalDonations} donations
-              </p>
-            </div>
           </div>
         </CardHeader>
 

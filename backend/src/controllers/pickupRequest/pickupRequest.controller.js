@@ -22,6 +22,11 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Returns distance in km
 };
 
+// Generate 4-digit PIN
+const generatePickupCode = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+};
+
 /* ---------------- CREATE PICKUP REQUEST (SEEKER) ---------------- */
 export const createPickupRequest = async (req, res) => {
   try {
@@ -118,9 +123,11 @@ export const createPickupRequest = async (req, res) => {
     let status = "pending";
     let acceptedAt = null;
 
+    // --- Generate Code ---
+    const pickupCode = generatePickupCode();
+
     const autoAccept =
       foodPost.provider?.settings?.providerPreferences?.autoAcceptRequests;
-
     /* -------- ATOMIC AUTO-ACCEPT (ONLY WHEN ENABLED) -------- */
     if (autoAccept) {
       const updatedFoodPost = await FoodPost.findOneAndUpdate(
@@ -163,6 +170,7 @@ export const createPickupRequest = async (req, res) => {
       note,
       status,
       acceptedAt,
+      pickupCode, // Save the OTP
       foodTitleSnapshot: foodPost.title,
       foodTypeSnapshot: foodPost.foodType,
       distanceKm,
@@ -216,6 +224,10 @@ export const completePickupRequest = async (req, res) => {
   session.startTransaction();
 
   try {
+    const { pickupCode } = req.body; // Expect code from Provider UI
+    // for the time being taking it mock data , but will receive it from ui after successful integration
+    // const {pickupCode} = "123456";
+
     const request = await PickupRequest.findOne({
       _id: req.params.id,
       provider: req.user.id,
@@ -224,6 +236,11 @@ export const completePickupRequest = async (req, res) => {
 
     if (!request) {
       throw new Error("Invalid pickup request");
+    }
+
+    // VERIFY CODE (If you want to enforce it)
+    if (pickupCode && request.pickupCode !== pickupCode) {
+        throw new Error("Incorrect Pickup Code");
     }
 
     request.status = "completed";
@@ -345,7 +362,7 @@ export const getSeekerPickupRequests = async (req, res) => {
       status: { $in: ["pending", "accepted"] },
     })
       .populate("provider", "name phone isVerified")
-      .populate("foodPost", "title quantity.unit availability.bestBefore")
+      .populate("foodPost", "title quantity.unit availability.bestBefore location")
       .sort({ createdAt: -1 });
 
     res.json({ requests });

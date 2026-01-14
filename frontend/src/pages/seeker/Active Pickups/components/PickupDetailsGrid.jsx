@@ -1,10 +1,10 @@
 import { Clock, MapPin, Utensils } from 'lucide-react';
-import { getSeekerTimeRemaining } from '@/data/seekerMockData';
+import {getTimeRemaining} from "../utils/pickupStatus";
 
 const PickupDetailsGrid = ({ pickup }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
     <Detail icon={Utensils} label="Quantity">
-      {pickup.requestedQuantity} {pickup.food.quantityUnit}
+      {pickup.requestedQuantity} {pickup.food.quantityUnit || 'units'}
     </Detail>
 
     <Detail icon={MapPin} label="Distance">
@@ -21,7 +21,7 @@ const PickupDetailsGrid = ({ pickup }) => (
         <span className="text-xs">Pickup By</span>
       </div>
       <p className="font-semibold text-warning">
-        {getSeekerTimeRemaining(pickup.food.availableTo)}
+        {getTimeRemaining(pickup.food.availableTo)}
       </p>
     </div>
   </div>

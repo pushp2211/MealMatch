@@ -7,6 +7,7 @@ import RequestsHeader from './components/RequestsHeader';
 import RequestsStats from './components/RequestsStats';
 import RequestsEmptyState from './components/RequestsEmptyState';
 import RequestCard from './components/RequestCard';
+import CompletePickupModal from './components/CompletePickupModal';
 
 const ProviderRequests = () => {
   const {
@@ -18,7 +19,11 @@ const ProviderRequests = () => {
     acceptedCount,
     handleAccept,
     handleReject,
-    handleComplete,
+    handleCompleteClick,
+    completeModalOpen,
+    setCompleteModalOpen,
+    handleConfirmComplete,
+    completing,
   } = useProviderRequests();
 
   return (
@@ -55,12 +60,19 @@ const ProviderRequests = () => {
                 index={index}
                 onAccept={handleAccept}
                 onReject={handleReject}
-                onComplete={handleComplete}
+                onComplete={handleCompleteClick}
               />
             ))
           )}
         </AnimatePresence>
       )}
+
+      <CompletePickupModal
+        open={completeModalOpen}
+        onClose={() => setCompleteModalOpen(false)}
+        onConfirm={handleConfirmComplete}
+        loading={completing}
+      />
     </div>
   );
 };

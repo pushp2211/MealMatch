@@ -45,6 +45,11 @@ const pickupRequestSchema = new mongoose.Schema(
       index: true,
     },
 
+    // --- The Digital Handshake PIN ---
+    pickupCode: {
+      type: String,
+    },
+
     // Snapshots (important for history UI)
     foodTitleSnapshot: String,
     foodTypeSnapshot: String,

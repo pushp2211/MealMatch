@@ -15,6 +15,11 @@ export const useProviderRequests = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
+  // OTP modal state
+  const [completeModalOpen, setCompleteModalOpen] = useState(false);
+  const [activeRequestId, setActiveRequestId] = useState(null);
+  const [completing, setCompleting] = useState(false);
+
   /* ================= FETCH REQUESTS ================= */
   const fetchRequests = useCallback(async () => {
     try {
@@ -78,24 +83,31 @@ export const useProviderRequests = () => {
       fetchRequests();
     }
   };
+  
+  // Step 1: Open OTP modal
+  const handleCompleteClick = (id) => {
+    setActiveRequestId(id);
+    setCompleteModalOpen(true);
+  };
 
-  const handleComplete = async (id) => {
-    // Optimistic UI
-    setRequests((prev) =>
-      prev.map((r) =>
-        r._id === id ? { ...r, status: "completed" } : r
-      )
-    );
+  // Step 2: Submit OTP
+  const handleConfirmComplete = async (otp) => {
+    if (!activeRequestId) return;
 
     try {
-      await completePickupRequest(id);
-      toast.success("Pickup completed! Thank you for your donation.");
+      setCompleting(true);
+      await completePickupRequest(activeRequestId, {
+        pickupCode: otp,
+      });
+
+      toast.success("Pickup completed successfully");
+      setCompleteModalOpen(false);
+      setActiveRequestId(null);
       fetchRequests();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to complete pickup"
-      );
-      fetchRequests();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid OTP");
+    } finally {
+      setCompleting(false);
     }
   };
 
@@ -108,6 +120,10 @@ export const useProviderRequests = () => {
     acceptedCount,
     handleAccept,
     handleReject,
-    handleComplete,
+    handleCompleteClick,
+    completeModalOpen,
+    setCompleteModalOpen,
+    handleConfirmComplete,
+    completing,
   };
 };

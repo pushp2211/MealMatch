@@ -56,10 +56,25 @@ const SeekerFindFood = () => {
   const isNavigation = state?.mode === "navigation";
   const pickup = state?.pickup;
 
-  const destinationLocation =
-    pickup?.food?.location ||
-    pickup?.food?.provider?.location ||
-    null;
+  const destinationLocation = (() => {
+    if (!pickup) return null;
+
+    // Case 1: Food has GeoJSON-style coordinates
+    const coords = pickup.food?.location?.coordinates;
+    if (Array.isArray(coords) && coords.length === 2) {
+      return {
+        lng: coords[0],
+        lat: coords[1],
+      };
+    }
+
+    // Case 2: Fallback (already normalized)
+    if (pickup.food?.location?.lat && pickup.food?.location?.lng) {
+      return pickup.food.location;
+    }
+    return null;
+  })();
+
 
   const {
     getCurrentLocation,

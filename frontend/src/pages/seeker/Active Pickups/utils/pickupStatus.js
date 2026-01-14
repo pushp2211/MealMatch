@@ -14,3 +14,23 @@ export const getPickupStatus = (acceptedAt) => {
 
     return { label: 'Waiting', color: 'warning' };
 };
+
+export const getTimeRemaining = (isoDate) => {
+  if (!isoDate) return "N/A";
+
+  const now = new Date();
+  const target = new Date(isoDate);
+
+  const diffMs = target - now;
+  if (diffMs <= 0) return "Expired";
+
+  const totalMinutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+};

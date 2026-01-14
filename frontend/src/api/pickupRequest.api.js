@@ -38,6 +38,6 @@ export const acceptPickupRequest = (id) =>
 export const declinePickupRequest = (id) =>
   api.post(`/api/pickup-requests/${id}/decline`);
 
-export const completePickupRequest = (id) =>
-  api.post(`/api/pickup-requests/${id}/complete`);
+export const completePickupRequest = (id, data) =>
+  api.post(`/api/pickup-requests/${id}/complete`, data);
 
