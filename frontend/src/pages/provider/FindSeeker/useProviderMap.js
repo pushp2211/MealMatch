@@ -11,11 +11,7 @@ const useProviderMap = (seekers, userLocation, radiusKm) => {
 
   return seekers
     .map((seeker) => {
-      // BACKEND READINESS:
-      // We assume 'seeker.location' exists. If your backend sends it differently (e.g. seeker.geo.lat),
-      // adjust this destructuring here.
       const { lat, lng } = seeker.location || {};
-      // If data is missing coordinates, skip it (or handle error)
       if (!lat || !lng) return null;
 
       // Calculate real-time distance from user to this seeker
@@ -23,19 +19,18 @@ const useProviderMap = (seekers, userLocation, radiusKm) => {
 
       return {
         id: seeker.id,
-        lat: lat,
-        lng: lng,
+        lat,
+        lng,
         // merge the calculated distance into the data for the UI card
         data: { ...seeker, distance: currentDistance },
         type: "seeker",
         status: seeker.requestStatus === 'accepted' ? 'active' : (seeker.verified ? 'verified' : 'normal'),
       };
     })
-    .filter((item) => item !== null) // Remove valid items
-    .filter((marker) => {
-      // Filter by radius slider
-      return parseFloat(marker.data.distance) <= radiusKm;
-    });
+    .filter(Boolean)
+    .filter(
+      (marker) => parseFloat(marker.data.distance) <= radiusKm
+    );
 };
 
 export default useProviderMap;

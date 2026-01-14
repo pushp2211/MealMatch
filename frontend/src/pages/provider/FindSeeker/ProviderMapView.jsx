@@ -17,9 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import SeekerList from "./components/SeekerList";
 import SeekerCard from "./components/SeekerCard";
 import useProviderMap from "./useProviderMap";
-
-// Import mock data source
-import { mockSeekers, mockPickupRequests } from "@/data/mockData";
+import api from "@/utils/axios";
 
 const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 };
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -29,6 +27,7 @@ const STYLE_SATELLITE = "mapbox://styles/mapbox/satellite-streets-v12";
 const ProviderMapView = () => {
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+  const etaDebounceRef = useRef(null);
 
   // --- STATE ---
   const { getCurrentLocation, clearWatch, loading: gpsLoading } = useUserLocation();
@@ -43,38 +42,57 @@ const ProviderMapView = () => {
   const [selectedSeeker, setSelectedSeeker] = useState(null);
   const [mapStyle, setMapStyle] = useState(STYLE_STREETS);
   
+  // --- ETA STATE ---
+  const [etaMinutes, setEtaMinutes] = useState(null);
+  const [etaLoading, setEtaLoading] = useState(false);
+
   // Search State
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // --- 1. SIMULATE BACKEND FETCH ---
+  /* --------------- 1. FETCH PROVIDER MAP DATA --------------- */
   useEffect(() => {
-    // In future: fetch(`/api/seekers?lat=${userLocation.lat}&lng=${userLocation.lng}`)
-    const simulatedResponse = mockSeekers.map((seeker) => {
-      const request = mockPickupRequests.find(req => 
-        req.seeker.id === seeker.id && 
-        (req.status === 'accepted' || req.status === 'pending')
-      );
+    const fetchProviderMap = async () => {
+      try {
+        const res = await api.get("/api/pickup-requests/provider/map");
 
-      return {
-          ...seeker,
-          // Simulating DB returning coordinates. 
-          location: {
-              lat: 12.9716 + (Math.random() - 0.5) * 0.05, 
-              lng: 77.5946 + (Math.random() - 0.5) * 0.05
-          },
-          requestStatus: request ? request.status : 'none', 
-          requestId: request ? request.id : null
-      };
-    });
-    setSeekersFromApi(simulatedResponse);
-  }, []); 
+        const normalized = res.data.requests
+          .map((r) => {
+            const coords = r.seeker?.location?.coordinates;
+            if (!coords) return null;
+
+            return {
+              id: r._id,
+              requestId: r._id,
+              requestStatus: r.status,
+
+              name: r.seeker.name,
+              phone: r.seeker.phone,
+              verified: r.seeker.isVerified,
+              type: r.seeker.seekerType,
+
+              distance: r.distanceKm,
+
+              location: {
+                lng: coords[0],
+                lat: coords[1],
+              },
+            };
+          })
+          .filter(Boolean);
+
+        setSeekersFromApi(normalized);
+      } catch (err) {
+        console.error("Failed to load provider map data", err);
+      }
+    };
+
+    fetchProviderMap();
+  }, []);
 
   // --- 2. MAP HOOK ---
   const mapMarkers = useProviderMap(seekersFromApi, userLocation, radius);
-
-  // --- EFFECTS ---
   
   // Initial Location Only
   useEffect(() => {
@@ -101,9 +119,9 @@ const ProviderMapView = () => {
   useEffect(() => {
     if (selectedSeeker && mapRef.current) {
       // FIX: Access nested location object safely
-      const lat = selectedSeeker.location?.lat;
-      const lng = selectedSeeker.location?.lng;
-
+      // const lat = selectedSeeker.location?.lat;
+      // const lng = selectedSeeker.location?.lng;
+      const { lat, lng } = selectedSeeker.location || {};
       if (lat && lng) {
         mapRef.current.flyTo({
           center: [lng, lat],
@@ -115,6 +133,39 @@ const ProviderMapView = () => {
       }
     }
   }, [selectedSeeker]);
+
+  /* ================= REAL ETA (ON DEMAND + DEBOUNCED) ================= */
+  useEffect(() => {
+    if (!selectedSeeker || !userLocation) return;
+
+    clearTimeout(etaDebounceRef.current);
+    setEtaLoading(true);
+    setEtaMinutes(null);
+
+    etaDebounceRef.current = setTimeout(async () => {
+      try {
+        const from = userLocation;
+        const to = selectedSeeker.location;
+
+        const res = await fetch(
+          `https://api.mapbox.com/directions/v5/mapbox/driving/${from.lng},${from.lat};${to.lng},${to.lat}?access_token=${MAPBOX_TOKEN}&overview=false`
+        );
+
+        const data = await res.json();
+        const seconds = data?.routes?.[0]?.duration;
+
+        if (seconds) {
+          setEtaMinutes(Math.ceil(seconds / 60));
+        }
+      } catch (err) {
+        console.error("ETA calculation failed", err);
+      } finally {
+        setEtaLoading(false);
+      }
+    }, 400); // debounce
+
+    return () => clearTimeout(etaDebounceRef.current);
+  }, [selectedSeeker, userLocation]);
 
   // Map Style Toggle
   useEffect(() => {
@@ -297,6 +348,8 @@ const ProviderMapView = () => {
            {/* CARD INSIDE CONTAINER */}
            <SeekerCard
               seeker={selectedSeeker}
+              etaMinutes={etaMinutes}
+              etaLoading={etaLoading}
               onClose={() => setSelectedSeeker(null)}
            />
 

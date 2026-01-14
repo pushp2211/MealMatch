@@ -8,7 +8,8 @@ import {
   cancelPickupRequest,
   getProviderPickupRequests,
   completePickupRequest,
-  getSeekerPickupRequests
+  getSeekerPickupRequests,
+  getProviderMapRequests
 } from "../controllers/index.js";
 
 const router = express.Router();
@@ -23,5 +24,7 @@ router.post("/:id/decline", protect, declinePickupRequest);
 
 router.get("/seeker", protect, getSeekerPickupRequests);
 router.post("/:id/cancel", protect, cancelPickupRequest);
+
+router.get("/provider/map", protect, getProviderMapRequests);
 
 export default router;

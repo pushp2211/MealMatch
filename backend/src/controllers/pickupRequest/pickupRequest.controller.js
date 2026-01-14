@@ -397,3 +397,19 @@ export const cancelPickupRequest = async (req, res) => {
   }
   res.json({ message: "Request cancelled" });
 };
+
+export const getProviderMapRequests = async (req, res) => {
+  if (req.user.role !== "provider") {
+    return res.status(403).json({ message: "Only providers allowed" });
+  }
+
+  const requests = await PickupRequest.find({
+    provider: req.user.id,
+    status: { $in: ["pending", "accepted"] },
+  })
+    .populate("seeker", "name phone seekerType isVerified location")
+    .populate("foodPost", "title")
+    .sort({ createdAt: -1 });
+
+  res.json({ requests });
+};
