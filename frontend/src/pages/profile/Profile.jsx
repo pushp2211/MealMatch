@@ -10,8 +10,8 @@ import AboutSection from '@/components/profile/AboutSection';
 import RoleDetails from '@/components/profile/RoleDetails';
 import AccountInfo from '@/components/profile/AccountInfo';
 import { useProfile } from './hooks/useProfile';
-import HistorySkeleton from '../history/components/HistorySkeleton';
 import { useAuth } from '@/context/AuthContext';
+import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
 
 
 const Profile = () => {
@@ -30,7 +30,7 @@ const Profile = () => {
     }
   }, [profile, user.role]);
 
-  if (loading || !draftProfile) return <HistorySkeleton />;
+  if (loading || !draftProfile) return <ProfileSkeleton />;
 
   const handleSave = async () => {
     await saveProfile(draftProfile);

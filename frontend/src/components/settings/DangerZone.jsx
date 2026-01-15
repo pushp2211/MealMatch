@@ -7,86 +7,86 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Label } from '../ui/label';
 
-function DangerZone({ deleteConfirm, setDeleteConfirm }) {
-    return (
-        <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                <Card className="border-destructive/50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-destructive">
-                            <AlertTriangle className="w-5 h-5" />
-                            Danger Zone
-                        </CardTitle>
-                        <CardDescription>
-                            Irreversible account actions
-                        </CardDescription>
-                    </CardHeader>
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
-                    <CardContent>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div>
-                                <p className="font-medium">Delete Account</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Permanently delete your account and all data
-                                </p>
-                            </div>
+function DangerZone({ onDelete }) {
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant="destructive">
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Account
-                                    </Button>
-                                </DialogTrigger>
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
 
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle className="flex items-center gap-2 text-destructive">
-                                            <AlertTriangle className="w-5 h-5" />
-                                            Delete Account
-                                        </DialogTitle>
-                                        <DialogDescription>
-                                            This action cannot be undone. This will permanently delete
-                                            your account, all your posts, and remove your data from our
-                                            servers.
-                                        </DialogDescription>
-                                    </DialogHeader>
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await onDelete(password);
+      // Force logout locally
+      setUser(null);
+      toast.success("Account deleted successfully");
+      // Redirect immediately
+      navigate("/login", { replace: true });
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to delete account"
+      );
+    } finally {
+      setLoading(false);
+      setPassword("");
+    }
+  };
 
-                                    <div className="py-4">
-                                        <Label>Type "DELETE" to confirm</Label>
-                                        <Input
-                                            value={deleteConfirm}
-                                            onChange={(e) => setDeleteConfirm(e.target.value)}
-                                            placeholder="DELETE"
-                                            className="mt-2"
-                                        />
-                                    </div>
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="w-5 h-5" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Irreversible account actions
+          </CardDescription>
+        </CardHeader>
 
-                                    <DialogFooter>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setDeleteConfirm('')}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            disabled={deleteConfirm !== 'DELETE'}
-                                            onClick={() =>
-                                                toast.error('Account deletion is disabled in demo')
-                                            }
-                                        >
-                                            Delete Forever
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                    </CardContent>
-                </Card>
-            </motion.div>
-        </>
-    )
+        <CardContent>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Account
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+              </DialogHeader>
+
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <DialogFooter>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={!password || loading}
+                >
+                  {loading ? "Deleting..." : "Delete Forever"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export default DangerZone;

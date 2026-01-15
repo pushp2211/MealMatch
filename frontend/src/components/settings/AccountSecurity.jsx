@@ -1,92 +1,148 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Shield, LogOut, Key, Monitor, Smartphone } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Shield,
+  LogOut,
+  Key,
+  Monitor,
+  Smartphone,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
-function AccountSecurity({mockSessions}) {
-    const handleLogout = () => toast.info('Logged out successfully');
-    const handleLogoutAll = () => toast.info('Logged out from all devices');
-    const handleChangePassword = () => toast.info('Password change email sent');
+import ChangePasswordDialog from "@/components/settings/ChangePasswordDialog";
 
-    return (
-        <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-primary" />
-                            Account & Security
-                        </CardTitle>
-                        <CardDescription>
-                            Manage your account security and sessions
-                        </CardDescription>
-                    </CardHeader>
+function AccountSecurity({
+  sessions,
+  onLogout,
+  onLogoutAll,
+  onChangePassword,
+}) {
+  const [openChangePassword, setOpenChangePassword] = useState(false);
 
-                    <CardContent className="space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b">
-                            <div>
-                                <p className="font-medium">Password</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Change your account password
-                                </p>
-                            </div>
-                            <Button variant="outline" onClick={handleChangePassword}>
-                                <Key className="w-4 h-4 mr-2" />
-                                Change Password
-                            </Button>
-                        </div>
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            Account & Security
+          </CardTitle>
+          <CardDescription>
+            Manage your account security and sessions
+          </CardDescription>
+        </CardHeader>
 
-                        <div className="space-y-3">
-                            <p className="font-medium">Active Sessions</p>
-                            <div className="space-y-2">
-                                {mockSessions.map((session) => (
-                                    <div
-                                        key={session.id}
-                                        className="flex items-center justify-between p-3 border rounded-lg bg-muted/30"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            {session.device.includes('iPhone') ||
-                                                session.device.includes('Android') ? (
-                                                <Smartphone className="w-4 h-4 text-muted-foreground" />
-                                            ) : (
-                                                <Monitor className="w-4 h-4 text-muted-foreground" />
-                                            )}
-                                            <div>
-                                                <p className="text-sm font-medium">{session.device}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {session.current
-                                                        ? 'Current session'
-                                                        : `Last active ${session.lastActive.toLocaleDateString()}`}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {session.current && <Badge variant="success">Active</Badge>}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+        <CardContent className="space-y-6">
+          {/* Password */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b">
+            <div>
+              <p className="font-medium">Password</p>
+              <p className="text-sm text-muted-foreground">
+                Change your account password
+              </p>
+            </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                            <Button variant="outline" className="flex-1" onClick={handleLogout}>
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Logout
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                className="flex-1"
-                                onClick={handleLogoutAll}
-                            >
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Logout All Devices
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </motion.div>
-        </>
-    )
+            {/* IMPORTANT: open dialog, not API call */}
+            <Button
+              variant="outline"
+              onClick={() => setOpenChangePassword(true)}
+            >
+              <Key className="w-4 h-4 mr-2" />
+              Change Password
+            </Button>
+          </div>
+
+          {/* Sessions */}
+          <div className="space-y-3">
+            <p className="font-medium">Active Sessions</p>
+
+            <div className="space-y-2">
+              {sessions.map((s) => {
+                const isMobile =
+                  s.device.toLowerCase().includes("iphone") ||
+                  s.device.toLowerCase().includes("android");
+
+                return (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between p-3 border rounded-lg bg-muted/30"
+                  >
+                    <div className="flex gap-3 items-start">
+                      {isMobile ? (
+                        <Smartphone className="w-4 h-4 mt-1 text-muted-foreground" />
+                      ) : (
+                        <Monitor className="w-4 h-4 mt-1 text-muted-foreground" />
+                      )}
+
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium break-all">
+                          {s.device}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {s.current
+                            ? "Current session"
+                            : `Last active: ${new Date(
+                                s.lastActive
+                              ).toLocaleString()}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          IP: {s.ip || "Unknown"} · Role: {s.role}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Logged in:{" "}
+                          {new Date(s.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {s.current && (
+                      <Badge variant="success">Active</Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={onLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={onLogoutAll}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout All Devices
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 🔑 THIS WAS MISSING */}
+      <ChangePasswordDialog
+        open={openChangePassword}
+        onOpenChange={setOpenChangePassword}
+        onSubmit={onChangePassword}
+      />
+    </motion.div>
+  );
 }
 
 export default AccountSecurity;

@@ -1,5 +1,6 @@
 import cloudinary from "../../config/cloudinary.js";
 import { User } from "../../models/user.model.js";
+import bcrypt from "bcryptjs";
 
 /**
  * GET /api/users/me
@@ -122,9 +123,67 @@ export const getMySessions = async (req, res) => {
     const sessions = user.sessions.map(s => ({
         id: s._id,
         device: s.userAgent || "Unknown device",
+        ip: s.ip,
+        role: s.role,
+        createdAt: s.createdAt,
         lastActive: s.lastUsedAt,
         current: s._id.toString() === req.user.sessionId,
     }));
 
     res.json(sessions);
 };
+
+export const changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id).select("+password");
+
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) {
+        return res.status(400).json({ message: "Incorrect current password" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+
+    // SECURITY: invalidate all other sessions
+    user.sessions = user.sessions.filter(
+        s => s._id.toString() === req.user.sessionId
+    );
+
+    await user.save();
+
+    res.json({ message: "Password updated" });
+};
+
+export const deleteMyAccount = async (req, res) => {
+  const { password } = req.body;
+  const user = await User.findById(req.user.id).select("+password");
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) {
+    return res.status(400).json({ message: "Incorrect password" });
+  }
+
+  // Delete user (sessions removed implicitly)
+  await User.deleteOne({ _id: req.user.id });
+
+  // Clear auth cookies properly
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  return res.json({ success: true, message: "Account deleted" });
+};
+
+

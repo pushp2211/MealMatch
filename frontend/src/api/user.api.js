@@ -30,3 +30,15 @@ export const updateMySettings = settings =>
 
 export const getMySessions = () =>
   api.get("/api/users/me/sessions").then(res => res.data);
+
+export const logoutMe = () =>
+  api.post("/api/auth/logout");
+
+export const logoutAll = () =>
+  api.post("/api/auth/logout-all");
+
+export const changePassword = data =>
+  api.post("/api/users/me/change-password", data);
+
+export const deleteAccount = password =>
+  api.post("/api/users/me/delete", { password });

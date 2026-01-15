@@ -1,91 +1,101 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
-function OperationalPreferences({
-    role,
-    radius,
-    setRadius,
-    autoAccept,
-    setAutoAccept,
-    autoExpire,
-    setAutoExpire,
-}) {
-    return (
-        <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-primary" />
-                            {role === 'provider'
-                                ? 'Provider Preferences'
-                                : 'Seeker Preferences'}
-                        </CardTitle>
-                        <CardDescription>
-                            Configure your operational settings
-                        </CardDescription>
-                    </CardHeader>
+function OperationalPreferences({ role, settings, onChange }) {
+  const isProvider = role === "provider";
 
-                    <CardContent className="space-y-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label>
-                                    {role === 'provider'
-                                        ? 'Pickup Radius'
-                                        : 'Search Radius'}
-                                </Label>
-                                <span className="text-sm font-medium text-primary">
-                                    {radius} km
-                                </span>
-                            </div>
+  const prefs = isProvider
+    ? settings.providerPreferences
+    : settings.seekerPreferences;
 
-                            <Slider
-                                value={[radius]}
-                                onValueChange={(v) => setRadius(v[0])}
-                                min={1}
-                                max={25}
-                                step={1}
-                            />
+  const update = (updates) => {
+    onChange({
+      ...settings,
+      [isProvider ? "providerPreferences" : "seekerPreferences"]: {
+        ...prefs,
+        ...updates,
+      },
+    });
+  };
 
-                            <p className="text-xs text-muted-foreground">
-                                {role === 'provider'
-                                    ? 'Maximum distance seekers can be from your location'
-                                    : 'Maximum distance to search for food posts'}
-                            </p>
-                        </div>
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            {isProvider ? "Provider Preferences" : "Seeker Preferences"}
+          </CardTitle>
+          <CardDescription>
+            Configure your operational settings
+          </CardDescription>
+        </CardHeader>
 
-                        {role === 'provider' && (
-                            <>
-                                <div className="flex items-center justify-between pt-2 border-t">
-                                    <div>
-                                        <Label>Auto-Accept Requests</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            Automatically accept pickup requests from verified seekers
-                                        </p>
-                                    </div>
-                                    <Switch checked={autoAccept} onCheckedChange={setAutoAccept} />
-                                </div>
+        <CardContent className="space-y-6">
+          <div>
+            <div className="flex justify-between">
+              <Label>
+                {isProvider ? "Pickup Radius" : "Search Radius"}
+              </Label>
+              <span className="text-sm font-medium text-primary">
+                {prefs.pickupRadiusKm || prefs.searchRadiusKm} km
+              </span>
+            </div>
 
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label>Auto-Expire Posts</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            Automatically expire posts after best-before time
-                                        </p>
-                                    </div>
-                                    <Switch checked={autoExpire} onCheckedChange={setAutoExpire} />
-                                </div>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-            </motion.div>
-        </>
-    )
+            <Slider
+              value={[
+                prefs.pickupRadiusKm || prefs.searchRadiusKm,
+              ]}
+              min={1}
+              max={25}
+              step={1}
+              onValueChange={([v]) =>
+                update(
+                  isProvider
+                    ? { pickupRadiusKm: v }
+                    : { searchRadiusKm: v }
+                )
+              }
+            />
+          </div>
+
+          {isProvider && (
+            <>
+              <div className="flex justify-between items-center border-t pt-4">
+                <Label>Auto-Accept Requests</Label>
+                <Switch
+                  checked={prefs.autoAcceptRequests}
+                  onCheckedChange={(v) =>
+                    update({ autoAcceptRequests: v })
+                  }
+                />
+              </div>
+
+              <div className="flex justify-between items-center">
+                <Label>Auto-Expire Posts</Label>
+                <Switch
+                  checked={prefs.autoExpireFoodPosts}
+                  onCheckedChange={(v) =>
+                    update({ autoExpireFoodPosts: v })
+                  }
+                />
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export default OperationalPreferences;
