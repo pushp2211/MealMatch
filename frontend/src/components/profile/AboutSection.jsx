@@ -3,6 +3,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { motion } from 'framer-motion';
 
 function AboutSection({ formData, setFormData, isEditing }){
+    const bio = formData?.bio ?? "";
+
     return(
         <>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
@@ -15,7 +17,7 @@ function AboutSection({ formData, setFormData, isEditing }){
                   {isEditing ? (
                     <>
                       <Textarea
-                        value={formData.bio}
+                        value={bio}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -27,12 +29,12 @@ function AboutSection({ formData, setFormData, isEditing }){
                         className="resize-none"
                       />
                       <p className="text-xs text-muted-foreground text-right">
-                        {formData.bio.length}/300
+                        {bio.length}/300
                       </p>
                     </>
                   ) : (
                     <p className="text-muted-foreground">
-                      {formData.bio || 'No bio added yet.'}
+                      {bio || 'No bio added yet.'}
                     </p>
                   )}
                 </div>

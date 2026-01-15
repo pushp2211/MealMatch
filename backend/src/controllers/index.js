@@ -6,3 +6,4 @@ export * from "./food/index.js";
 export * from "./pickupRequest/index.js";
 export * from "./activity/index.js";
 export * from "./history/index.js";
+export * from "./user/index.js";

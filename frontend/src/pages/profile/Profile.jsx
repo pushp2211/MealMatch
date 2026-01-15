@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Edit, Save, X} from 'lucide-react';
-import { toast } from 'sonner';
+import { Edit, Save, X } from 'lucide-react';
 
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ContactInfo from '@/components/profile/ContactInfo';
@@ -10,37 +9,40 @@ import LocationSection from '@/components/profile/LocationSection';
 import AboutSection from '@/components/profile/AboutSection';
 import RoleDetails from '@/components/profile/RoleDetails';
 import AccountInfo from '@/components/profile/AccountInfo';
+import { useProfile } from './hooks/useProfile';
+import HistorySkeleton from '../history/components/HistorySkeleton';
 import { useAuth } from '@/context/AuthContext';
 
-const mockUser = {
-  id: '1',
-  name: 'Green Plate Restaurant',
-  email: 'contact@greenplate.com',
-  phone: '+91 98765 43210',
-  avatar: null,
-  role: 'provider',
-  verified: true,
-  city: 'Mumbai, Maharashtra',
-  bio: 'We believe in zero food waste. Every day, we share quality surplus meals with those who need them most.',
-  providerType: 'restaurant',
-  organizationName: 'Green Plate Hospitality Pvt. Ltd.',
-  seekerType: null,
-  joinedAt: new Date('2024-01-15'),
-};
 
 const Profile = () => {
+  const { profile, saveProfile, loading } = useProfile();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(mockUser);
-  const {user} = useAuth();
-  mockUser.role = user.role;
+  const [draftProfile, setDraftProfile] = useState(null);
 
-  const handleSave = () => {
-    toast.success('Profile updated successfully');
+  useEffect(() => {
+    if (profile) {
+      setDraftProfile({ 
+        ...profile, 
+        role: user.role,
+        avatarPreview: null
+      });
+    }
+  }, [profile, user.role]);
+
+  if (loading || !draftProfile) return <HistorySkeleton />;
+
+  const handleSave = async () => {
+    await saveProfile(draftProfile);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setFormData(mockUser);
+    setDraftProfile({
+      ...profile,
+      role: user.role,
+      avatarPreview: null,
+    });
     setIsEditing(false);
   };
 
@@ -78,17 +80,17 @@ const Profile = () => {
 
         <div className="space-y-6">
           {/* Profile Header */}
-          <ProfileHeader formData={formData} setFormData={setFormData} isEditing={isEditing}/>
+          <ProfileHeader formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
           {/* Contact Information */}
-          <ContactInfo formData={formData} setFormData={setFormData} isEditing={isEditing}/>
+          <ContactInfo formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
           {/* Location */}
-          <LocationSection formData={formData} setFormData={setFormData} isEditing={isEditing}/>
+          <LocationSection formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
           {/* About / Bio */}
-          <AboutSection formData={formData} setFormData={setFormData} isEditing={isEditing}/>
+          <AboutSection formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
           {/* Role-Specific Fields */}
-          <RoleDetails formData={formData} setFormData={setFormData} isEditing={isEditing}/>
+          <RoleDetails formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
           {/* Metadata */}
-          <AccountInfo formData={formData} setFormData={setFormData} isEditing={isEditing}/> 
+          <AccountInfo formData={draftProfile} setFormData={setDraftProfile} isEditing={isEditing} />
         </div>
       </div>
     </>
