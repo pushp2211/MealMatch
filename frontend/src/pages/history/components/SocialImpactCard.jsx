@@ -4,12 +4,10 @@ import { Leaf } from 'lucide-react';
 
 const SocialImpactCard = ({
   role,
-  thisMonthPeopleFed,
-  thisMonthFoodSaved,
+  peopleFed,
+  foodSaved,
   estimatedValue,
 }) => {
-  const people = thisMonthPeopleFed ? thisMonthPeopleFed : 0;
-  const quantity = thisMonthFoodSaved ? thisMonthFoodSaved : 0;
 
   return (
     <motion.div
@@ -26,7 +24,7 @@ const SocialImpactCard = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <p className="text-2xl sm:text-3xl font-bold">
-                {people}
+                {peopleFed}
               </p>
               <p className="text-sm opacity-80">
                 {role == 'provider' ? 'People Fed' : 'People Served'}
@@ -41,7 +39,7 @@ const SocialImpactCard = ({
 
             <div>
               <p className="text-2xl sm:text-3xl font-bold">
-                {thisMonthFoodSaved}{' '}
+                {foodSaved}{' '}
                 <span className="text-base font-normal">
                   servings
                 </span>
@@ -52,7 +50,7 @@ const SocialImpactCard = ({
               <p className="text-xs opacity-60 mt-1 flex items-center gap-1">
                 <Leaf className="w-3 h-3" />
                 Prevented ~
-                {Math.round(thisMonthFoodSaved * 0.5)} kg of CO₂ emissions
+                {Math.round(foodSaved * 0.5)} kg of CO₂ emissions
               </p>
             </div>
 

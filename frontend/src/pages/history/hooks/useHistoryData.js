@@ -1,52 +1,37 @@
-import { useState, useMemo } from 'react';
-import { mockDonationHistory } from '@/data/mockData';
-import { mockSeekerHistory } from '@/data/seekerMockData';
+import { useEffect, useState } from "react";
 import { ITEMS_PER_PAGE } from '../constants';
-import {
-  getLimitedHistory,
-  calculateTotals,
-  calculateThisMonthImpact,
-  formatDate,
-} from '../utils/history.utils';
+import { fetchHistory } from "@/api/history.api";
 
-export const useHistoryData = (role = 'provider') => {
+export const useHistoryData = () => {
+  const [data, setData] = useState(null);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+  const [loading, setLoading] = useState(true);
 
-  const sourceData =
-    role === 'seeker'
-      ? mockSeekerHistory
-      : mockDonationHistory;
+  useEffect(() => {
+    fetchHistory()
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const allItems = useMemo(
-    () => getLimitedHistory(sourceData),
-    [sourceData]
-  );
+  if (loading || !data) {
+    return { loading: true };
+  }
 
-  const visibleDonations = useMemo(
-    () => allItems.slice(0, displayCount),
-    [allItems, displayCount]
-  );
-
-  const totals = calculateTotals(allItems, role);
-  const thisMonthImpact = calculateThisMonthImpact(allItems, role);
+  const visibleDonations = data.items.slice(0, displayCount);
 
   const handleLoadMore = () => {
     setDisplayCount(prev =>
-      Math.min(prev + ITEMS_PER_PAGE, allItems.length)
+      Math.min(prev + ITEMS_PER_PAGE, data.items.length)
     );
   };
 
-  const hasMore = displayCount < allItems.length;
-  const isAtMax = displayCount >= allItems.length;
-
   return {
-    role,
+    loading: false,
     visibleDonations,
-    formatDate,
     handleLoadMore,
-    hasMore,
-    isAtMax,
-    ...totals,
-    ...thisMonthImpact,
+    hasMore: displayCount < data.items.length,
+    isAtMax: displayCount >= data.items.length,
+    ...data.stats,
+    ...data.thisMonth,
   };
 };

@@ -4,10 +4,16 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Users, CheckCircle } from 'lucide-react';
 
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
 const DonationHistory = ({
     role,
     visibleDonations,
-    formatDate,
     handleLoadMore,
     hasMore,
     isAtMax
@@ -24,12 +30,12 @@ const DonationHistory = ({
                         {role === 'provider' ? 'Donation History' : 'Pickup History'}
                     </CardTitle>
                 </CardHeader>
-                
+
                 <CardContent className="p-0">
                     <div className="divide-y divide-border">
-                        {visibleDonations.map((donation, index) => (
+                        {visibleDonations.map((item, index) => (
                             <motion.div
-                                key={donation.id}
+                                key={item.id}
                                 className="px-4 sm:px-6 py-4 hover:bg-muted/30 transition-colors"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -41,7 +47,7 @@ const DonationHistory = ({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-wrap items-center gap-2 mb-1">
                                             <h4 className="font-medium truncate">
-                                                {role == 'provider' ? donation.foodPost.title : donation.food?.title || donation.title} 
+                                                {item.title}
                                             </h4>
                                             <Badge
                                                 variant="outline"
@@ -53,26 +59,25 @@ const DonationHistory = ({
                                         </div>
 
                                         <p className="text-sm text-muted-foreground">
-                                            {/* {donation.quantityDonated} servings */}
-                                            {donation.quantityDonated ?? donation.quantityReceived}{' '}
-                                            {donation.food?.quantityUnit ?? 'servings'}
+                                            {item.quantity} {item.unit}
                                         </p>
 
                                         <p className="text-sm text-muted-foreground">
                                             {role === 'provider'
-                                                ? `Picked up by ${donation.seeker?.name ?? 'Seeker'}`
-                                                : `From ${donation.food?.provider?.name ?? 'Provider'}`}
+                                                ? `Picked up by ${item.counterpartName}`
+                                                : `From ${item.counterpartName}`}
                                         </p>
                                     </div>
 
                                     <div className="text-left sm:text-right flex-shrink-0">
                                         <p className="text-sm text-muted-foreground">
-                                            {formatDate(donation.completedAt)}
+                                            {formatDate(item.completedAt)}
                                         </p>
                                         <p className="text-sm text-primary flex items-center gap-1 sm:justify-end mt-1">
                                             <p className="text-sm text-info flex items-center justify-end gap-1 mt-1">
                                                 <Users className="w-3 h-3" />
-                                                {donation.peopleHelped ?? donation.peopleServed} {role == 'provider' ? 'people fed' : 'people served'}
+                                                {item.people}{' '}
+                                                {role === 'provider' ? 'people fed' : 'people served'}
                                             </p>
                                         </p>
                                     </div>

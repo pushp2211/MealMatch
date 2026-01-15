@@ -5,12 +5,10 @@ import { TrendingUp, Users, Calendar, Utensils } from 'lucide-react';
 const HistoryStats = ({
     role,
     totalDonations,
-    totalFoodDonated,
-    totalPeopleFed,
+    totalFood,
+    totalPeople,
     activeDays,
 }) => {
-    const peopleCount = totalPeopleFed ? totalPeopleFed : 0;
-
     return (
         <motion.div
             className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4"
@@ -34,7 +32,7 @@ const HistoryStats = ({
                 <CardContent className="px-4">
                     <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-2" />
                     <p className="text-xl sm:text-2xl font-bold">
-                        {totalFoodDonated}{' '}
+                        {totalFood}{' '}
                         <span className="text-sm font-normal">
                             servings
                         </span>
@@ -49,7 +47,7 @@ const HistoryStats = ({
                 <CardContent className="px-4">
                     <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-700 mb-2" />
                     <p className="text-xl sm:text-2xl font-bold">
-                        {peopleCount.toLocaleString()}
+                        {totalPeople}
                     </p>
                     <p className="text-sm text-muted-foreground">
                         {role === 'provider' ? 'People Fed' : 'People Served'}
