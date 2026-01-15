@@ -42,13 +42,13 @@ export const refresh = async (req, res) => {
       // If token valid but session not found/expired/reused -> FORCE LOGOUT
       res.clearCookie("accessToken", {
         httpOnly: true,
-        sameSite: 'Lax',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.COOKIE_SECURE === "true",
+        sameSite: process.env.COOKIE_SAMESITE || "Lax",
       });
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        sameSite: 'Lax',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.COOKIE_SECURE === "true",
+        sameSite: process.env.COOKIE_SAMESITE || "Lax",
       });
       return res.status(401).json({ message: "Invalid session" });
     }
@@ -96,15 +96,15 @@ export const refresh = async (req, res) => {
     // Set Cookies
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
       maxAge: ACCESS_TOKEN_MINUTES * 60 * 1000,
     });
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
       maxAge: REFRESH_DAYS * 86400000,
     });
 

@@ -173,14 +173,14 @@ export const deleteMyAccount = async (req, res) => {
   // Clear auth cookies properly
   res.clearCookie("accessToken", {
     httpOnly: true,
-    sameSite: "Lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.COOKIE_SECURE === "true",
+    sameSite: process.env.COOKIE_SAMESITE || "Lax",
   });
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    sameSite: "Lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.COOKIE_SECURE === "true",
+    sameSite: process.env.COOKIE_SAMESITE || "Lax",
   });
 
   return res.json({ success: true, message: "Account deleted" });

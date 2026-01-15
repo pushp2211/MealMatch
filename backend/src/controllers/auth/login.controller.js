@@ -61,15 +61,15 @@ export const login = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000, // 15min
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",   // "None" for prod if cross-site
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: REFRESH_DAYS * 86400000,  // 7 days
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
     });
 
     res.json({
@@ -107,13 +107,13 @@ export const logout = async (req, res) => {
 
     res.clearCookie("accessToken", {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
     });
 
     res.json({ success: true, message: "Logged out successfully" });
@@ -136,13 +136,13 @@ export const logoutAll = async (req, res) => {
 
     res.clearCookie("accessToken", {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.COOKIE_SECURE === "true",
+      sameSite: process.env.COOKIE_SAMESITE || "Lax",
     });
 
     res.json({ success: true, message: "Logged out from all devices" });

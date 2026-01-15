@@ -99,9 +99,6 @@ export const getMyFoodPosts = async (req, res) => {
 export const getNearbyFoodPosts = async (req, res) => {
   try {
     const { lng, lat, radius = 5000 } = req.query;
-    console.log("longitude ", lng);
-    console.log("latitude ", lat);
-    console.log("radius ", radius);
     
     const longitude = Number(lng);
     const latitude = Number(lat);
