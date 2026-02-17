@@ -8,19 +8,30 @@ import PrivacyVisibility from "@/components/settings/PrivacyVisibility";
 import DangerZone from "@/components/settings/DangerZone";
 import { useSettings } from "./hooks/useSettings";
 import SettingsSkeleton from "@/components/settings/SettingsSkeleton";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, logout, logoutAll } = useAuth();
+  const navigate = useNavigate();
+
   const {
     loading,
     settings,
     sessions,
     updateSettings,
-    logoutCurrent,
-    logoutAllDevices,
     changePassword,
     deleteAccount,
   } = useSettings();
+
+  const handleLogoutCurrent = async()=>{
+    await logout();
+    navigate("/login", {replace: true});
+  }
+
+  const handleLogoutAll = async()=>{
+    await logoutAll();
+    navigate("/login", {replace: true});
+  }
 
   if (loading || !settings) return <SettingsSkeleton/>;
 
@@ -40,8 +51,8 @@ const Settings = () => {
       <div className="space-y-6">
         <AccountSecurity
           sessions={sessions}
-          onLogout={logoutCurrent}
-          onLogoutAll={logoutAllDevices}
+          onLogout={handleLogoutCurrent}
+          onLogoutAll={handleLogoutAll}
           onChangePassword={changePassword}
         />
 

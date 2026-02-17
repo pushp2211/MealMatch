@@ -3,8 +3,6 @@ import {
   getMyProfile,
   getMySessions,
   updateMySettings,
-  logoutMe,
-  logoutAll,
   changePassword,
   deleteAccount,
 } from "@/api/user.api";
@@ -55,17 +53,6 @@ export const useSettings = () => {
     sessions,
 
     updateSettings,
-
-    logoutCurrent: async () => {
-      await logoutMe();
-      window.location.reload();
-    },
-
-    logoutAllDevices: async () => {
-      await logoutAll();
-      window.location.reload();
-    },
-
     changePassword,
     deleteAccount,
   };
