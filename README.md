@@ -295,7 +295,7 @@ Under the following terms:
 
 Pushpraj Singh- [elysm1961@gmail.com](mailto:elysm1961@gmail.com)
 
-Project Link: [https://github.com/Shivanshu0915/MealMatch](https://github.com/Shivanshu0915/MealMatch)
+Project Link: [https://github.com/pushp2211/MealMatch](https://github.com/pushp2211/MealMatch)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
