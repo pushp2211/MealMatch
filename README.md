@@ -25,8 +25,8 @@
     <br />
     <br />
     <strong>Demo Credentials</strong><br/>
-    User → elysm1961@gmail.com | shivanshu <br/>
-    Admin → elysm1961@gmail.com | shivanshu
+    User → elysm1961@gmail.com<br/>
+    Admin → elysm1961@gmail.com
     <br />
     <br />
     <a href="https://github.com/Shivanshu0915/MealMatch/issues">Report Bug</a>
@@ -293,7 +293,7 @@ Under the following terms:
 
 ## Contact
 
-Shivanshu Pathak- [elysm1961@gmail.com](mailto:elysm1961@gmail.com)
+Pushpraj Singh- [elysm1961@gmail.com](mailto:elysm1961@gmail.com)
 
 Project Link: [https://github.com/Shivanshu0915/MealMatch](https://github.com/Shivanshu0915/MealMatch)
 
