@@ -2,7 +2,6 @@
 
 <div align="center">
 
-[![Contributors](https://img.shields.io/github/contributors/Shivanshu0915/MealMatch.svg?style=for-the-badge)](https://github.com/Shivanshu0915/MealMatch/graphs/contributors)&nbsp;[![Forks](https://img.shields.io/github/forks/Shivanshu0915/MealMatch.svg?style=for-the-badge)](https://github.com/Shivanshu0915/MealMatch/network/members)&nbsp;[![Stargazers](https://img.shields.io/github/stars/Shivanshu0915/MealMatch.svg?style=for-the-badge)](https://github.com/Shivanshu0915/MealMatch/stargazers)&nbsp;[![Issues](https://img.shields.io/github/issues/Shivanshu0915/MealMatch.svg?style=for-the-badge)](https://github.com/Shivanshu0915/MealMatch/issues)&nbsp;[![MIT License](https://img.shields.io/github/license/Shivanshu0915/MealMatch.svg?style=for-the-badge)](https://github.com/Shivanshu0915/MealMatch/blob/main/LICENSE.txt)&nbsp;[![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/shivanshu-pathak-11449b283/)
 
 </div>
 <br />
