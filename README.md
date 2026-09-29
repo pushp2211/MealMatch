@@ -6,7 +6,7 @@
 </div>
 <br />
 <div align="center">
-  <a href="https://github.com/Shivanshu0915/MealMatch">
+  <a href="https://github.com/pushp2211/MealMatch">
     <img src="assets/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -24,13 +24,13 @@
     <br />
     <br />
     <strong>Demo Credentials</strong><br/>
-    User → elysm1961@gmail.com<br/>
-    Admin → elysm1961@gmail.com
+    User → pushpraj0171@gmail.com<br/>
+    Admin → pushpraj0171@gmail.com
     <br />
     <br />
-    <a href="https://github.com/Shivanshu0915/MealMatch/issues">Report Bug</a>
+    <a href="https://github.com/pushp2211/MealMatch/issues">Report Bug</a>
     * 
-    <a href="https://github.com/Shivanshu0915/MealMatch/issues">Request Feature</a>
+    <a href="https://github.com/pushp2211/MealMatch/issues">Request Feature</a>
   </p>
 </div>
 
@@ -140,7 +140,7 @@ Ensure you have the following installed on your local development machine:
 
 1.  **Clone the repository**
     ```sh
-    git clone https://github.com/Shivanshu0915/MealMatch.git
+    git clone https://github.com/pushp2211/MealMatch.git
     ```
 2.  **Backend Setup**
     * Navigate to the backend directory:
@@ -292,7 +292,7 @@ Under the following terms:
 
 ## Contact
 
-Pushpraj Singh- [elysm1961@gmail.com](mailto:elysm1961@gmail.com)
+Pushpraj Singh- [pushpraj0171@gmail.com](mailto:pushpraj0171@gmail.com)
 
 Project Link: [https://github.com/pushp2211/MealMatch](https://github.com/pushp2211/MealMatch)
 
